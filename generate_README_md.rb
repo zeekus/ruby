@@ -53,17 +53,17 @@ def generate_readme_md(myfilename,my_files)
   fd = IO.sysopen(myfilename, "w")
   a = IO.new(fd,"w")
 
-  a.puts "Most of it is just for fun."
-  a.puts "It showcases some of things I can do."
+  a.puts "Most of it is just for fun.\n"
+  a.puts "It showcases some of things I can do.\n"
 
-  a.puts "Filename  | Description| Language"
-  a.puts "--------- | -----------| ----------"
+  a.puts "Filename  | Description| Language\n"
+  a.puts "--------- | -----------| ----------\n"
 
   my_files.each  do | f_name|
     parsed_header=[]
     raw_header = open_file_and_return_raw_header(f_name)
     parsed_header=parse_header(raw_header,f_name)
-    a.puts "#{parsed_header[:file]} | #{parsed_header[:desc]} | #{parsed_header[:lang]} "
+    a.puts "#{parsed_header[:file]} | #{parsed_header[:desc]} | #{parsed_header[:lang]}\n"
   end
   a.close
 end
