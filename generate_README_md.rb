@@ -6,7 +6,7 @@
 #
 def get_list_of_files_in_repositories
   list_of_files=[] #all files besides README.md
-  list_of_files=Dir.glob("*.[tprs]*")
+  list_of_files=Dir.glob("[!README.md]*") #everthing but README.md
   return list_of_files
 end
 
