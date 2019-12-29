@@ -4,7 +4,7 @@ It showcases some of things I can do.
 
 Filename | Description | Language 
 ----------- | ----------- | ---------- 
-ticket_helper2.rb | takes arguements and generates recuring text that is used on a helpdesk job. | ruby
+ticket_helper2.rb | takes arguments and generates recurring text that is used on a help-desk job. | ruby
 generate_README_md.rb | tool to automate the Generation of README.md files. |  ruby
-ticket_helper2b.rb | unknown | ruby
-top_10_hits.rb | gets Top 10 requests by IPAddress per hour. | ruby
+ticket_helper2b.rb | takes arguments and generates recurring text that is used on a help-desk job. | ruby
+top_10_hits.rb | garbage code needs re-work gets Top 10 requests by IPAddress per hour. | ruby

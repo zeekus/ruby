@@ -1,13 +1,14 @@
 #!/usr/bin/env ruby
 $version="0.1"
-#filename: ticket_helper.rb
+#filename: ticket_helper2.rb
+#description: takes arguments and generates recurring text that is used on a help-desk job.
 
-class Reocurring_text_generation
+class Recurring_text_generation
 
   def main_class(menu_item,sr,c_email,t_title,task_id,th_email,sys,c_tel,desc)
-  #main class takes all the varibles even if nil
+  #main class takes all the variables even if nil
     if $debug==1
-      puts "deubg is on we made it to main_class"
+      puts "debug is on we made it to main_class"
       puts "menu_item is #{menu_item}"
       puts "sr is #{sr}"
       puts "customer email is #{c_email}"
@@ -42,7 +43,7 @@ class Reocurring_text_generation
     when 2 # Access to servers requested
       puts "Request access to server" if $debug==1
       if ( sr != nil and sys != nil)
-        self.generic_request_acccess_to_server(sr,sys)
+        self.generic_request_access_to_server(sr,sys)
       else
         puts "error nil value for sr:#{sr} or sys:#{sys}"
         exit 1
@@ -61,16 +62,16 @@ class Reocurring_text_generation
          puts "error nil values for sr,c_email,t_title,court_unit"
        end
     when 6 #request task closure
-       puts "request task cloure"
+       puts "request task closure"
        self.close_completed_task(th_email,th_name,task_id,c_name,court_unit,sr,t_title)
-    when 7 # task Esculation   ce sr ti tel --desc
-       puts "task Esculation"
+    when 7 # task Escalation   ce sr ti tel --desc
+       puts "task Escalation"
 
-       self.task_esculation(c_email,c_name,court_unit,sr,t_title,c_tel,desc)
+       self.task_escalation(c_email,c_name,court_unit,sr,t_title,c_tel,desc)
     end
   end
 
-  def task_esculation(c_email,c_name,c_unit,sr,t_title,c_tel,desc)
+  def task_escalation(c_email,c_name,c_unit,sr,t_title,c_tel,desc)
     tel=c_tel.to_s.unpack('A3A3A4').join('-') #phone conversion
     puts "#{c_unit} is requesting assistance with #{t_title}"
     puts "-------------------------------------------------"
@@ -81,7 +82,7 @@ class Reocurring_text_generation
     printf "Parent ID      %-1s\n", sr
     printf "Ticket Title   %-1s\n", t_title
     #printf "%-14s %-35sn","Dotted Decimal","#{ips}"
-    printf "Summary        %-1s is requesting assitance with %s\n", c_unit, t_title
+    printf "Summary        %-1s is requesting assistance with %s\n", c_unit, t_title
     printf "Description    %-1s\n", desc
   end
 
@@ -91,18 +92,18 @@ class Reocurring_text_generation
     puts "\nI am writing to check the status on Ticket #{sr}."
     puts "In the ticket, you reported '#{title}'."
     puts "How would you like to proceed with this ticket ? "
-    puts "Do you need further assitance ? \n"
+    puts "Do you need further assistance ? \n"
 
     puts "==============================="
     puts "request updated for #{c_name} #{unit}"
     puts "==============================="
     puts "emailed #{unit} customer at #{email}."
-    puts "requsted status update."
+    puts "requested status update."
 
   end
 
   def generic_opening_response(sr,title)
-   #description: general notificaiton upon ticket ownership
+   #description: general notification upon ticket ownership
    puts "The CM/ECF National Support Desk Team has received your Heat Ticket and begun investigating."
    puts "If you discover any additional information that will help with our troubleshooting efforts, please add this info to the ticket."
    puts "Information can be added to the \'notes\' section of the Heat ticket. "
@@ -111,15 +112,15 @@ class Reocurring_text_generation
    puts "==============================="
    puts "ticket action"
    puts "==============================="
-   puts "notfied customer of ticket activation"
+   puts "notified customer of ticket activation"
   end
 
 
   def close_completed_task(th_email,th_name,task_id,c_name,court_unit,sr,t_title)
    #description Close task request. email sent to task holder asking them to close/complete a task
    puts "Dear #{th_name}"
-   puts "Thank you for your assitance with task #{task_id}. "
-   puts "Your assitance with #{court_unit} was greatly appreciated."
+   puts "Thank you for your assistance with task #{task_id}. "
+   puts "Your assistance with #{court_unit} was greatly appreciated."
    puts "Have you found any additional information regarding this problem ? "
    puts "If not, can you close task #{task_id} in ticket #{sr} with the title '#{t_title}'."
    puts "==============================="
@@ -144,11 +145,11 @@ class Reocurring_text_generation
   end
 
   def cyberark_message(c_name, sr, title)
-    #descrpiton cyberark message
+    #Description cyberark message
     puts "\nInvestigating #{title} in regards to #{sr}. Working with #{c_name}.\n"
   end
 
-  def generic_request_acccess_to_server(ticket_num,servers)
+  def generic_request_access_to_server(ticket_num,servers)
     #description Request access to server
     puts "In order to process your request, in Ticket  #{ticket_num}, the National Support desk"
     puts "will need explicit written permission to access your server(s)."
@@ -157,10 +158,10 @@ class Reocurring_text_generation
   end
 
   def sig_field()
-    #signiture field
+    #signature field
     puts "*>*>*>*>*>*>"
     puts "Teddy Knab"
-    puts "Enterpise Support Desk (NSD)"
+    puts "Enterprise Support Desk (NSD)"
     puts "Office: 210-536-5000 Option 5, Option 2"
     puts "For more information on our Phone Queue and other changes, check us out on JNET:"
     puts "http://jnet.ao.dcn/information-technology/support"
@@ -174,13 +175,13 @@ class Reocurring_text_generation
   #description: convert service ticket to incident information
 
   # def transforming_incident_to_service_request()
-  #descrpiton: convert incident to service request information
+  #Description: convert incident to service request information
 
-  #json logging for recording data and quicker retreval
+  #json logging for recording data and quicker retrieval
 end #end class
 
 def get_court_unit_from_email(email)
-  #descrpiton get court unit form eamail
+  #Description get court unit form email
   if ( email =~ /_/ and email =~ /@/ )
     puts "...attempting to format #{email} in to a readable name" if $debug==1
     second_part_of_email=email.split('@')[1] #first part
@@ -268,7 +269,7 @@ def menu_list()
   puts "6) Request Task closure: Problem resolved, but task open."
   puts "...use example: " + $0 + " -mi 6 -ce ted_knab@mdb.uscourts.gov -sr 32316 -ti 'firewall issue' -ta 82488 -te steve_barks@aotx.uscourts.gov"
   puts "----------------------------------"
-  puts "7) Task Esculation:"
+  puts "7) Task Escalation:"
   puts "...use example: " + $0 + " -mi 7 -ce ted_knab@mdb.uscourts.gov -sr 32316 -ti 'firewall issue' -tel 4109627807 --desc 'customer is getting timed out on server'"
 end
 
@@ -278,7 +279,7 @@ end
 #4 check status on task ( nag task holder) -ce -sr -ti -te -ta
 #5 check status with customer              -ce -sr -ti
 #6 request task closure                    -ce -sr -ti -te -ta
-#7 task Esculation   ce sr ti tel --desc
+#7 task Escalation   ce sr ti tel --desc
 
 
 def parsing_args(args_w_strings)
@@ -321,7 +322,7 @@ def parsing_args(args_w_strings)
     puts "telephone         #{ctel}"
     puts "description       #{desc}"
   end
-  ticket_helper=Reocurring_text_generation.new
+  ticket_helper=Recurring_text_generation.new
   ticket_helper.main_class(menu_item,sr,c_email,title,task,t_email,sys,ctel,desc)
   puts "debug: #{line}" if $debug==1
 end #end parsing

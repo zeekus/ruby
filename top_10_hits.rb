@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 #file_name: top_10_hiters.rb
-#description: gets Top 10 requests by IPAddress per hour.
-#
+#description: garbage code needs re-work gets Top 10 requests by IPAddress per hour.
 $debug=0
+
 def getlogs(myhour,mytime,my_day)
    require 'socket'
    my_year=mytime.year
@@ -57,6 +57,9 @@ get_last_5_days(today)
 
 my_tmp_hr=""
 
+##############
+#calc hours
+##############
 for x in 00..24
   if x < 10
     puts "0#{x}" if $debug==1
