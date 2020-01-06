@@ -9,22 +9,22 @@ proceedure_tables = [
    {"Fix"=> "Edit SSL Cyphers", "Filename:" => "/etc/httpd/conf.d/z-ecf-settings.conf", "Baseline:" => "SSLProtocol all -SSLv2 -SSLv3 -TLSv1"}
 	},
   {"vulerablitity" => "Spring Framework 4.3.x < / 5.0.x < 5.05 Remote Code Execution with spring-messageing (CVE-2018-1280)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a court responsiblity. Someone will address this in the near future."=>"Action required: none."}
 	 },
   {"vulerablitity" => "Oracle Java SE 1.7.0_241/ 1.8.0_231/ 1.11.0_5 / 1.13.0_1 Multiple Vulerablities (Oct 2019 CPU) (Unix)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. The someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "RHEL 6 : sudo (RHSA-2019:3755) ", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "SSL Certificiate Signed Using a Weak Hashing Alogrithim", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "RHEL 6 : firefox (RHSA-2019:2694)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "SSL CA Certificate Cannot be trusted.", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "SSLv3 Padding Oracle on Downgraded Legacy Enryption Vulernerablity(POODLE)", "fix" =>
    {"Fix"=> "Edit SSL Cyphers", "Filename:" => "/etc/httpd/conf.d/z-ecf-settings.conf", "Baseline:" => "SSLProtocol all -SSLv2 -SSLv3 -TLSv1"}
@@ -33,13 +33,13 @@ proceedure_tables = [
    {"Fix"=> "Edit SSH Cyphers", "Filename:" => "/etc/ssh/sshd_config", "Baseline:" => "Protocol 2 #only"}
   },
   {"vulerablitity" => "RHEL 6: java-1.8.0-oracle (RHSA-2018:3003)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone  will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "RHEL 6: openssl (RHSA-2019-2471)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "RHEL 6/7 : ImageMagick (RHSA-2019:1237)", "fix" =>
-   {"This is not a court responsiblity. The AO CHNO or CMSO will address this in the near future."=>"Action required: none."}
+   {"This is not a customer responsiblity. Someone will address this in the near future."=>"Action required: none."}
   },
   {"vulerablitity" => "SSL Medium Strength Ciphers Suites Supported (SWEET32)", "fix" =>
    {"Fix"=> "Court can safely remove 64-bit,112-bit,or 3DES encryption hashs", "Filename:" => "/etc/httpd/conf.d/z-ecf-settings.conf", "Baseline:" => "SSLCipherSuite ... (ask us) "}
