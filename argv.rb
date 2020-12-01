@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 #filename: argv.rb
+#descripiton: parsing data from argv with ruby 
 
 debug=1
 
@@ -11,7 +12,7 @@ puts "length of ARGV array is: " + ARGV.length.to_s  if debug==1
 
 for i in 0 ... ARGV.length
   puts "MAIN DEBUG#{i}: '#{ARGV[i].chomp}'" if debug==1
-  if ARGV[i] =~ /-/ and ARGV[i] !~ /-help/ #alterate run 'help' is found
+  if ARGV[i] =~ /-/ and ARGV[i] !~ /-help/ #alternate run 'help' is found
     puts "DEBUG#{i}: flag detected '#{ARGV[i].chomp}'" if debug==1
     i2=i+1
     puts "DEBUG#{i}: associated with'#{ARGV[i2].chomp}'" if debug==1
