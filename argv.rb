@@ -14,12 +14,12 @@ for i in 0 ... ARGV.length
   if ARGV[i] =~ /-/ and ARGV[i] !~ /-help/ #alterate run 'help' is found
     puts "DEBUG#{i}: flag detected '#{ARGV[i].chomp}'" if debug==1
     i2=i+1
-    puts "DEBUG#{i}: associed with'#{ARGV[i2].chomp}'" if debug==1
+    puts "DEBUG#{i}: associated with'#{ARGV[i2].chomp}'" if debug==1
   elsif ARGV[i].chomp =~ /-help/ or ARGV[i] =~ /\s+/ #need help
     puts "DEBUG3: 'help command received'" if debug==1
     help()
   else
-    puts "something went wrong we should not see this. #{ARGV[i].chomp}'" if debug==1
+    puts "need some error checking here. last line ?  #{ARGV[i].chomp}'" if debug==1
   end
  end
 
