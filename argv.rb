@@ -1,21 +1,21 @@
 #!/usr/bin/ruby
 #filename: argv.rb
 
-debug==1
+debug=1
 
 def help()
     puts "help was called"
 end
 
 puts "length of ARGV array is: " + ARGV.length.to_s  if debug==1
-print "0 is #{ARGV[0]}" if debug ==1
+
 for i in 0 ... ARGV.length
   puts "MAIN DEBUG#{i}: '#{ARGV[i].chomp}'" if debug==1
   if ARGV[i] =~ /-/ and ARGV[i] !~ /-help/ #alterate run 'help' is found
     puts "DEBUG#{i}: flag detected '#{ARGV[i].chomp}'" if debug==1
     i2=i+1
     puts "DEBUG#{i}: associed with'#{ARGV[i2].chomp}'" if debug==1
-  elsif ARGV[i].chomp =~ /-help/ or ARGV[i] =~ /\s/ #need help
+  elsif ARGV[i].chomp =~ /-help/ or ARGV[i] =~ /\s+/ #need help
     puts "DEBUG3: 'help command received'" if debug==1
     help()
   else
