@@ -1,7 +1,10 @@
 #!/usr/bin/ruby
 #filename: list_us_federal_holidays.rb
-#description: generate list of holiday work days for 1 year
+#description: generate list of holiday work days for 13 years
 #language: Ruby
+
+period_s="01/01/2020"  #start
+period_e="12/31/2033"  #end
 
 require 'time'
 time=Time.now
@@ -85,23 +88,23 @@ def holiday_rules_us(year)
   myday=Time.strptime("12/25/#{year}","%m/%d/%Y")
   #Christmas static 12/25
   if myday.month == 12 and ( myday.day==25) 
-   holiday_list.push("12/25/#{year}: Christmas Day")        if ( myday.wday != day_map['sun']  and  myday.wday != day_map['sat']  and myday.day ==25 ) #push standard if not a week day
-   holiday_list.push("12/26/#{year}: Christmas Monday off") if ( myday.day  == 25 and  myday.wday == day_map['sun'] ) #push Monday after  Sunday   12/25
-   holiday_list.push("12/24/#{year}: Christmass Eve off")   if ( myday.day  == 25 and  myday.wday == day_map['sat'] ) #push Friday before Saturday 12/25
+   holiday_list.push("12/25/#{year}:Christmas Day")        if ( myday.wday != day_map['sun']  and  myday.wday != day_map['sat']  and myday.day ==25 ) #push standard if not a week day
+   holiday_list.push("12/26/#{year}:Christmas Monday off") if ( myday.day  == 25 and  myday.wday == day_map['sun'] ) #push Monday after  Sunday   12/25
+   holiday_list.push("12/24/#{year}:Christmass Eve off")   if ( myday.day  == 25 and  myday.wday == day_map['sat'] ) #push Friday before Saturday 12/25
   end
 
   #Thanksgiving 4th Thursday of every November
   my_start=Time.strptime("11/1/#{year}","%m/%d/%Y")
   my_day=return_day(my_start,target_day=day_map['thu'],4) #Target get 4th Thursday of month
   formatted=my_day.strftime("%m/%d/%Y")
-  holiday_list.push("#{formatted}: Thanksgiving")
+  holiday_list.push("#{formatted}:Thanksgiving")
 
   #Veterans day static 11/11
   myday=Time.strptime("11/11/#{year}","%m/%d/%Y")
   if myday.month == 11 and myday.day==11  
-    holiday_list.push("11/11/#{year}: Veterans day proper") if ( myday.wday != day_map['sat']  and  myday.wday != day_map['sun']  and myday.day ==11 ) #push standard if not a week day
-    holiday_list.push("11/12/#{year}: Veterans day after.") if ( myday.day  == 11 and  myday.wday == day_map['sun'] ) #push Monday after Sunday 11/11
-    holiday_list.push("11/10/#{year}: Vetrans day eve")     if ( myday.day  == 11 and  myday.wday == day_map['sat'] ) #push Friday before Saturday 11/11
+    holiday_list.push("11/11/#{year}:Veterans day proper") if ( myday.wday != day_map['sat']  and  myday.wday != day_map['sun']  and myday.day ==11 ) #push standard if not a week day
+    holiday_list.push("11/12/#{year}:Veterans day after.") if ( myday.day  == 11 and  myday.wday == day_map['sun'] ) #push Monday after Sunday 11/11
+    holiday_list.push("11/10/#{year}:Vetrans day eve")     if ( myday.day  == 11 and  myday.wday == day_map['sat'] ) #push Friday before Saturday 11/11
   end
 
   #Columbus Day ( 2nd Monday in October) 
@@ -122,11 +125,9 @@ def holiday_rules_us(year)
     if myday.wday !=day_map['sun'] and myday.wday !=day_map['sat'] #regular day 
        holiday_list.push("7/4/#{year}: Proper" )
     elsif myday.wday == day_map['sun'] #Sunday
-       my_day=("07/05/#{year}: Monday July 5th")
-       holiday_list.push(my_day)
+       holiday_list.push("7/5/#{year}: Monday ")
     elsif myday.wday == day_map['sat'] #Friday
-       my_day=("07/03/#{year}: Friday July 3rd")
-       holiday_list.push(my_day)
+       holiday_list.push("7/3/#{year}: Friday Eve ")
     else
       puts "error in Indep day logic"
       exit
@@ -155,14 +156,12 @@ def holiday_rules_us(year)
   #new years static 1/1
   myday=Time.strptime("1/1/#{year}","%m/%d/%Y")
   if myday.wday !=day_map['sun'] and myday.wday !=day_map['sat'] #regular day 
-    my_day=("01/01/#{year}: Happy New Year")
-    holiday_list.push(my_day )
+    holiday_list.push("1/1/#{year}: Proper" )
   elsif myday.wday == day_map['sun'] #Sunday
-    my_day=("01/02/#{year}: Happy Monday after Year")
-    holiday_list.push(my_day )
+   holiday_list.push("1/2/#{year}: Monday ")
   else #Friday
    year_before=year-1
-   holiday_list.push("12/31/#{year_before}: Friday New Year's Eve")
+   holiday_list.push("12/31/#{year_before}: Monday ")
   end
 
 
@@ -172,9 +171,45 @@ def holiday_rules_us(year)
 end
 
 
+my_start=Time.strptime(period_s,"%m/%d/%Y")
+my_end=Time.strptime(period_e,"%m/%d/%Y")
+
+puts "start #{my_start}"
+puts "myend #{my_end}"
+
+one_day_adv=(60 * 60 * 24) #one day in seconds
+
+
+nextday=my_start
+count=0
 my_holidays=[] #list of holidays
 
-my_holidays=holiday_rules_us("2020")
+debug=0
+
+my_year=nextday.year
+my_holidays=holiday_rules_us(nextday.year)
+
+
+
+#while true
+#  formatted=nextday.strftime("%m/%d/%Y")
+#  holiday=holiday_rules_us(nextday.year,my_holidays)
+#  if holiday.to_s.length > 1
+#    puts "holiday on #{holiday}" if debug==1
+#    my_holidays.push(holiday) 
+#  end
+#  nextday=nextday+one_day_adv
+
+#  if nextday >  my_end
+#    puts "exiting with #{nextday} and #{my_end}"
+#    break
+#  end
+#
+#end
+
+#puts "day count is #{count}"
+#hours_needed=count*8
+#puts "hour count is #{hours_needed}"
 
 for line in my_holidays
   puts line
