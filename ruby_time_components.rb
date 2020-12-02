@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
+#language: Ruby
 #filename: ruby_time_components.rb
-#decription: maps out time elements ruby can see by default
+#description: maps out time elements ruby can see by default
 require 'time'
 
 time=Time.now

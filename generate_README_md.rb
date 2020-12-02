@@ -19,6 +19,8 @@ def open_file_and_return_raw_header(filename)
     header.push(line) if line.match(/^#desc/)
   end
 
+  puts header
+
   return header
 end
 
@@ -27,14 +29,14 @@ def parse_header(header,file)
   desc="unknown"
   header.each do | line |
     if line.match(/lang/i)
-        lang=line.split(":")[1].downcase.chomp
+        lang=line.split(":")[1].downcase
     elsif line.match(/.*env/i)
-        lang=line.split("env ")[1].chomp
+        lang=line.split("env ")[1]
     elsif line.match(/^#!\/usr\/bin/i)
-        lang=line.split("//")[2].chomp
+        lang=line.split("//")[2]
     end
     if line.match(/^#file/i)
-      file=line.split(":")[1].chomp
+      file=line.split(":")[1]
     end
     if line.match(/^#desc/i)
       desc=line.split(":")[1].chomp.gsub(/^\s*/, "")

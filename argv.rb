@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+#language: Ruby
 #filename: argv.rb
 #descripiton: parsing data from argv with ruby 
 

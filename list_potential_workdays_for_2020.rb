@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+#language: Ruby
 #filename: list_potential_workdays_for_2020.rb
 #description: generate list of potential work days for 2020
 #note holidays are not in this list

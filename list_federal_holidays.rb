@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 #filename: list_us_federal_holidays.rb
 #description: generate list of holiday work days for 13 years
+#language: Ruby
 
 period_s="01/01/2020"  #start
 period_e="12/31/2033"  #end
