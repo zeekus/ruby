@@ -7,7 +7,7 @@ time=Time.now
 
 # Components of a Time
 puts "Current Time : #{time}"
-#puts "year:     " + time.year     # => Year of the date 
+puts "year       :#{time.year}"    # => Year of the date 
 puts "month      :#{time.month}"   # => Month of the date (1 to 12)
 puts "day        :#{time.day}"     # => Day of the date (1 to 31 )
 puts "wday       :#{time.wday}"    # => 0: Day of week: 0 is Sunday
