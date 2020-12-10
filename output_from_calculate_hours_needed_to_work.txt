@@ -1,0 +1,20 @@
+[myuser@mycomputer ruby]$ ruby calculate_hour_needed_to_fullfil_timesheet.rb 66
+length of ARGV array is: 1
+hours completed entered with 66
+12/01/2020 is Tue
+12/02/2020 is Wed
+12/03/2020 is Thu
+12/04/2020 is Fri
+12/07/2020 is Mon
+12/08/2020 is Tue
+12/09/2020 is Wed
+12/10/2020 is Thu
+12/11/2020 is Fri
+12/14/2020 is Mon
+12/15/2020 is Tue
+use: calculated_hours_needed_to_work.rb 20 #for 20 hours worked
+day count is 11
+total hours needed for the period is 88
+total hours completed is 66
+total hours remaining is 22
+
