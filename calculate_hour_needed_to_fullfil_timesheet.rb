@@ -3,13 +3,15 @@
 #filename: calculate_hour_needed_to_fullfil_timesheet.rb
 #description: calc how many hours are needed to fufill the time period
 
-start_of_pay_period="12/01/2020"  #start
-end_of_pay_period="12/15/2020"  #end
+start_of_pay_period="12/16/2020"  #start
+end_of_pay_period="12/31/2020"  #end
 
 require 'time'
 
 my_start=Time.strptime(start_of_pay_period,"%m/%d/%y")
 my_end=Time.strptime(end_of_pay_period,"%m/%d/%y")
+now=Time.now
+mytoday=now.strftime("%m/%d/%Y")
 
 one_day_adv=(60 * 60 * 24) #one day in seconds
 
@@ -34,11 +36,15 @@ count=0
 
 while true
   formatted=nextday.strftime("%m/%d/%Y")
+
+  formatted="* #{formatted} *" if mytoday==formatted #when days match add this
+
   puts "#{formatted} is Mon"  if nextday.monday? 
   puts "#{formatted} is Tue"  if nextday.tuesday? 
   puts "#{formatted} is Wed"  if nextday.wednesday? 
   puts "#{formatted} is Thu" if nextday.thursday? 
   puts "#{formatted} is Fri" if nextday.friday? 
+  
   count=count+1 if nextday.saturday? != true and nextday.sunday? != true
   nextday=nextday+one_day_adv
 
