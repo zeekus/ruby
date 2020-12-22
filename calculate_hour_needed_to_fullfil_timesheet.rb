@@ -33,19 +33,35 @@ end
 
 nextday=my_start
 count=0
+hours=0
 
 while true
   formatted=nextday.strftime("%m/%d/%Y")
+  formatted_text=""
 
-  formatted="* #{formatted} *" if mytoday==formatted #when days match add this
+  #puts "debug nextday is #{nextday}"
 
-  puts "#{formatted} is Mon"  if nextday.monday? 
-  puts "#{formatted} is Tue"  if nextday.tuesday? 
-  puts "#{formatted} is Wed"  if nextday.wednesday? 
-  puts "#{formatted} is Thu" if nextday.thursday? 
-  puts "#{formatted} is Fri" if nextday.friday? 
+  if nextday.monday?
+    formatted_text = "#{formatted} is Monday #{hours}"
+  elsif nextday.tuesday?
+    formatted_text = "#{formatted} is Tuesday #{hours}"
+  elsif  nextday.wednesday?
+    formatted_text = "#{formatted} is Wednesday #{hours}"
+  elsif nextday.thursday?
+    formatted_text = "#{formatted} is Thursday #{hours}"
+  elsif nextday.friday?
+    formatted_text = "#{formatted} is Friday #{hours}"
+  else
+    "Warning: day not counted"
+  end
+  hours=hours+8 if nextday.saturday? != true and nextday.sunday? != true
+
+  #append today to formatted_text when today   
+  formatted_text="#{formatted_text} * Today * " if mytoday==formatted #when days match add this
   
+  #counter add next day only count monday - friday
   count=count+1 if nextday.saturday? != true and nextday.sunday? != true
+  puts "#{count} #{formatted_text}" if nextday.saturday? != true and nextday.sunday? != true
   nextday=nextday+one_day_adv
 
   if nextday >  my_end
