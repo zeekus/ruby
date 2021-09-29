@@ -16,7 +16,7 @@ end
 iterations=20
 x=0
 
-inf=get_infalation_rate()
+inf=get_inflation_rate()
 inflation_rate=(inf*0.01)
 
 puts "Enter the start amount for the first year"
