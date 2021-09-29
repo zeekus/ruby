@@ -5,12 +5,16 @@
 
 iterations=20
 x=0
-inf=rand(7)
+
 inflation_rate=(inf*0.01)
-value=100000 #initial value
+
+puts "Enter the start amount for the first year"
+value=Integer(STDIN.gets())
+
 needed=value
 
 def get_inflation_rate()
+   #assume a inflation rate between 2% and 7%
    inflation_rate=(rand(7)*0.01)
    if inflation_rate > 0.02
       return inflation_rate
@@ -19,8 +23,7 @@ def get_inflation_rate()
    end
 end
 
-puts "Enter the start amount for the first year"
-value=Integer(STDIN.gets())
+
 
 until x > iterations
     inflation_rate=get_inflation_rate()
