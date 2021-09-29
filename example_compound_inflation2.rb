@@ -1,17 +1,7 @@
 #!/usr/bin/ruby
-#filename: example_compound_inflation.rb
+#filename: example_compound_inflation2.rb
 #description: compound_inflation
 #language: Ruby
-
-iterations=20
-x=0
-
-inflation_rate=(inf*0.01)
-
-puts "Enter the start amount for the first year"
-value=Integer(STDIN.gets())
-
-needed=value
 
 def get_inflation_rate()
    #assume a inflation rate between 2% and 7%
@@ -23,7 +13,16 @@ def get_inflation_rate()
    end
 end
 
+iterations=20
+x=0
 
+inf=get_infalation_rate()
+inflation_rate=(inf*0.01)
+
+puts "Enter the start amount for the first year"
+value=Integer(STDIN.gets())
+
+needed=value
 
 until x > iterations
     inflation_rate=get_inflation_rate()
