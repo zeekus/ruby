@@ -26,7 +26,7 @@ needed=value
 
 until x > iterations
     inflation_rate=get_inflation_rate()
-    puts "Year %2i adjusted value is %10i with the inflation rate of %3i. You will need %10i to keep the same standard of living." % [ x,value,(inflation_rate*100), needed ]
+    puts "Year %2i adjusted value is %10i with the inflation rate of %3i. You will need %10i to keep the same spending power." % [ x,value,(inflation_rate*100), needed ]
     x = x + 1
     needed = needed + ( needed * inflation_rate )
     value = value - ( value * inflation_rate)
