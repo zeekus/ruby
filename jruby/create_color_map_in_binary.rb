@@ -1,6 +1,6 @@
-#!/usr/bin/jruby
-#filename: color_finder.rb
-#description: looks gets locations from under the pointer and returns both the position and the r,g,b color and hex
+ #!/usr/bin/jruby
+#filename: create_color_map.rb
+#description: takes in input and generates a color map
 require 'java'
 
 java_import 'java.awt.Robot'            #robot class
@@ -13,6 +13,11 @@ def speak(message)
   wait_delay=2 # 2 seconds 
   system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
   sleep wait_delay
+end
+
+def countdown()
+    speak("1")
+    speak("hold")
 end
 
 def get_color_of_pixel(robot,x,y)
@@ -39,17 +44,43 @@ stop_number = 10
 array_of_colors=[]
 #loop to get the color of 10 different points on the screen
 
+puts "use: type a color identifier [label] - i.e. 'blue_fast'"
+
+for string in ARGV
+  puts "You typed `#{string}` as your argument(s)."
+end
+
+if ARGV.length == 0 
+    puts "error: no data received. We expected a string."
+    exit
+elsif ARGV.length > 1
+    puts "warning: too much data receieved. We expected 1 string."
+else 
+    puts "running.."
+    speak("mapping #{string}")
+    countdown
+    label=string
+end
+
 while counter <= stop_number  do
  x,y=get_mouse_loc(robot)
- r,b,g=get_color_of_pixel(robot,x,y)
- hex_string=("#" + r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
- array_of_colors.push(hex_string)
+ r,b,g=get_color_of_pixel(robot,x,y) #RGB color 
+ #hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
+ #binary string conversion helper
+ #9.to_s(2) #=> "1001"
+ #"1001".to_i(2) #=> 9
+ binary_color_string=r.to_s(2)+g.to_s(2)+b.to_s(2)
+ color_map_steing="\"#{binary_color_string} => #{label}\""
+ array_of_colors.push(color_map_string)
  print "while loop: location [#{x},#{y}] has the color r=#{r},g=#{g},b=#{b}\n"
- sleep 5
+ speak("move to a different pixel")
+ countdown
  counter +=1
 end
+
 
 #sample of colors sorted
 for line in array_of_colors.uniq
    puts line
 end
+

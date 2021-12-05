@@ -12,7 +12,8 @@ java_import 'java.awt.event.KeyEvent'   #presing keys
 
 
 
-rgb_color_map={ "r=80,g=143,b=195"  => "fast_blue",
+rgb_color_map={ "r=0,g=0,b=0"       => "black",
+                "r=80,g=143,b=195"  => "fast_blue",
                 "r=80,g=143,b=197"  => "fast_blue",
                 "r=81,g=142,b=195"  => "fast_blue",
                 "r=81,g=144,b=197"  => "fast_blue",
@@ -54,6 +55,8 @@ def get_color_of_pixel(robot,x,y)
     b = mycolors.blue
     rgb_string="r=#{r},g=#{g},b=#{b}"
     print "get_color_of_pixel: at [#{x},#{y}] color is #{rgb_string} \n"
+    hex_string=("#" + r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #upper case HEX
+    puts hex_string
     return r,b,g,rgb_string
 end
   
