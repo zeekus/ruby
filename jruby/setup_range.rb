@@ -37,6 +37,11 @@ def get_mouse_loc(robot)
   return my_x,my_y
 end
 
+def countdown()
+  speak("1")
+  speak("hold")
+end
+
 robot = Robot.new
 my_array=[]
 
@@ -45,6 +50,7 @@ sleep 1
 
 #check color at location
 speak("move the mouse to location on the screen that is black")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("black_icon=[#{my_x},#{my_y}]")
 rgb_color=get_color_of_pixel(robot,my_x,my_y)
@@ -52,6 +58,7 @@ print "black color of pixel is #{rgb_color}\n"
 my_array.push("black_color_is=#{rgb_color}")
 
 speak("move the mouse to location on the screen that has a white icon")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("white_icon=[#{my_x},#{my_y}]")
 rgb_color=get_color_of_pixel(robot,my_x,my_y)
@@ -59,64 +66,78 @@ print "white color of pixel is #{rgb_color}\n"
 my_array.push("white_color_is=#{rgb_color}")
 
 speak("Configure Yellow search area. move the mouse to the top left corner.")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("top_left_pixel=[#{my_x},#{my_y}]")
 
 speak("Configure Yellow search area. move mouse to the Bottom Right corner")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("bottom_right_pixel=[#{my_x},#{my_y}]")
 
 speak("define the buttons on the warp interface")
+countdown
 speak("move your mouse to the top corner of the left align to button")
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("button1_top=[#{my_x},#{my_y}]")
 
 
 speak("move your mouse to the botom right corner of the left align to button")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("button1_bottom=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the top left of the Warp 2 button")
+countdown
 my_x,my_y=get_mouse_loc(robot)
 my_array.push("button2_top=[#{my_x},#{my_y}]")
 
 
 speak("move your mouse to the bottom right of the Warp 2 button")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("button2_bottom=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the top left of the Jump 2 button")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("button3_top=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the bottom right of the Jump 2 button")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("button3_bottom=[#{my_x},#{my_y}]")
 
 
 speak("move your mouse to the top left of the show info button")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("button4_top=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the bottom right of the show info button")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("button4_bottom=[#{my_x},#{my_y}]")
 
 #colors Blue
 speak("move your mouse to the top right of the blue fast area")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("blue_fast_top=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the bottom right of the blue fast area")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("blue_fast_bottom=[#{my_x},#{my_y}]")
 
 #colors Blue slow
 speak("move your mouse to the top right of the blue slow area")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("blue_slow_top=[#{my_x},#{my_y}]")
 
 speak("move your mouse to the bottom right of the blue slow area")
+countdown
 my_loc=get_mouse_loc(robot)
 my_array.push("blue_slow_bottom=[#{my_x},#{my_y}]")
 

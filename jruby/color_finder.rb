@@ -9,10 +9,24 @@ java_import 'java.awt.MouseInfo'        #get location of mouse
 java_import 'java.awt.Color'            #get color of pixel at location on screen
 java_import 'java.awt.event.KeyEvent'   #presing keys
 
+rgb_hex_map={ "1E1E1E" => "pale_black" }
+
 def speak(message)
   wait_delay=2 # 2 seconds 
   system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
   sleep wait_delay
+end
+
+def find_color_match(robot,x,y,target_color,rgb_hex_map)
+  mycolors=robot.getPixelColor(x,y)
+  r = mycolors.red
+  g = mycolors.green
+  b = mycolors.blue
+  hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
+  print "test: find_color_match: at [#{x},#{y}] color is #{hex_string} while target color is #{target_color}\n"    
+  if rgb_hex_map["1E1E1E"] == target_color and rgb_hex_map != nil
+     puts "successful match"
+  end
 end
 
 def get_color_of_pixel(robot,x,y)
@@ -35,7 +49,7 @@ end
 robot=Robot.new
 
 counter = 1
-stop_number = 10
+stop_number = 3 
 array_of_colors=[]
 #loop to get the color of 10 different points on the screen
 
@@ -44,7 +58,8 @@ while counter <= stop_number  do
  r,b,g=get_color_of_pixel(robot,x,y)
  hex_string=("#" + r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
  array_of_colors.push(hex_string)
- print "while loop: location [#{x},#{y}] has the color r=#{r},g=#{g},b=#{b}\n"
+ print "while loop: location [#{x},#{y}] has the color r=#{r},g=#{g},b=#{b} and the hex of #{hex_string}\n"
+ #find_color_match(robot,x,y,target_color="pale_black",rgb_hex_map)
  sleep 5
  counter +=1
 end
