@@ -45,9 +45,9 @@ def speak(message)
     wait_delay=2 # 2 seconds 
     system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
     sleep wait_delay
-  end
+end
   
-  def get_color_of_pixel(robot,x,y)
+def get_color_of_pixel(robot,x,y)
     mycolors=robot.getPixelColor(x,y)
     r = mycolors.red
     g = mycolors.green
@@ -55,22 +55,22 @@ def speak(message)
     rgb_string="r=#{r},g=#{g},b=#{b}"
     print "get_color_of_pixel: at [#{x},#{y}] color is #{rgb_string} \n"
     return r,b,g,rgb_string
-  end
+end
   
-  def get_mouse_loc(robot)
-      my_x=MouseInfo.getPointerInfo().getLocation().x
-      my_y=MouseInfo.getPointerInfo().getLocation().y
-      puts "[#{my_x},#{my_y}]"
-      return my_x,my_y
-  end
+def get_mouse_loc(robot)
+    my_x=MouseInfo.getPointerInfo().getLocation().x
+    my_y=MouseInfo.getPointerInfo().getLocation().y
+    puts "[#{my_x},#{my_y}]"
+    return my_x,my_y
+end
 
-  robot=Robot.new
-  x,y=get_mouse_loc(robot)
-  r,b,g,rgb_string=get_color_of_pixel(robot,x,y)
-  if rgb_color_map[rgb_string] != nil 
-    puts "The pixel could be part of the " + rgb_color_map[rgb_string]
-  else
-    #nulls will break things
-    puts "The pixel is not mapped"
-  end
+robot=Robot.new
+x,y=get_mouse_loc(robot)
+r,b,g,rgb_string=get_color_of_pixel(robot,x,y)
+if rgb_color_map[rgb_string] != nil 
+   puts "The pixel could be part of the " + rgb_color_map[rgb_string]
+else
+  #nulls will break things
+  puts "The pixel is not mapped"
+end
 
