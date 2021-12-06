@@ -1,3 +1,6 @@
+#filename: json_file_creater.rb
+#description: create a simple json file
+
 require 'json'
 
 #read json file in
