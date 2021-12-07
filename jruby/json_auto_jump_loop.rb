@@ -170,6 +170,15 @@ class Findtarget
         r = mycolors.red
         g = mycolors.green
         b = mycolors.blue
+        rgb=[r,g,b]
+        for color in rgb
+          hex=color.to_s(16).upcase
+          hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+          hex_string="#{rgb_hex}#{hex}"
+        end
+
+        r_hex=r.to_s(16) 
+
         hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
         my_best_guess=guess_color(r,g,b) 
         if ( target_color == my_best_guess) 

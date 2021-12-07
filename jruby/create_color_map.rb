@@ -65,7 +65,12 @@ end
 while counter <= stop_number  do
  x,y=get_mouse_loc(robot)
  r,b,g=get_color_of_pixel(robot,x,y) #RGB color 
- hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
+ for color in rgb
+  hex=color.to_s(16).upcase
+  hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+  hex_string="#{rgb_hex}#{hex}" #RGB color to HEX format
+ end
+
  color_map_sting="\"#{hex_string} => #{label}\""
  array_of_colors.push(color_map_sting)
  print "while loop: location [#{x},#{y}] has the color r=#{r},g=#{g},b=#{b}\n"
