@@ -153,16 +153,16 @@ class Findtarget
     end #end of until loop
   end #end function move_mouse_to_target_like_human
 
-  def color_pixel_scan_in_range(robot,target_color,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map) 
+  def color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map) 
     count=0
     mybreak =0
     found_icon_coord=[]
     found_icon_coord =[0,0] #array location
   
     #scan on x axis main loop
-    for x in yellow_icon_left_top[0]..yellow_icon_right_bottom[0]
+    for x in left_top_xy[0]..right_bottom_xy[0]
       #scan on y axis inner loop
-      for y in yellow_icon_left_top[1]..yellow_icon_right_bottom[1]
+      for y in left_top_xy[1]..right_bottom_xy[1]
         count = count + 1
         found_icon_coord=[x,y]
         mycolors=robot.getPixelColor(x,y)
@@ -256,9 +256,9 @@ def double_click(robot,target_location)
    end
 end
 
-def check_non_clickable(robot,search_element,pixel_left_top,pixel_right_bottom,rgb_color_map)
+def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
   mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,pixel_icon_left_top,pixel_icon_right_bottom,rgb_color_map)
+  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
   if target_location != [0,0]
     mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
@@ -269,9 +269,9 @@ def check_non_clickable(robot,search_element,pixel_left_top,pixel_right_bottom,r
    end
 end
 
-def check_clickable(robot,search_element,clicks,icon_left_top,icon_right_bottom,rgb_color_map)
+def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map)
   mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,icon_left_top,icon_right_bottom,rgb_color_map)
+  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
    if target_location != [0,0] and target_location != nil 
     mytarget.move_mouse_to_target_like_human(robot,target_location)
@@ -280,7 +280,7 @@ def check_clickable(robot,search_element,clicks,icon_left_top,icon_right_bottom,
     else
       double_click(robot,target_location)
     end
-    return "warping"
+    return "double clicked"
    else
     puts "error: we didn't find the #{search_element} or click"
     exit
@@ -294,7 +294,7 @@ def wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
     puts "waiting to speeding up..."
     sleep 3
   end
-  return "moving"
+  return "yes" #we are moving
 end
 
 ###################################################
@@ -365,33 +365,45 @@ yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 destination_selected=0
 in_space=1
 jump_count = 0 
-mstatus=""
+are_we_moving=""
+icon_found_count=0
+icon_notfound_count=0
 
 while in_space==1
   single_click(robot,ref_point) #click on center of screen
   are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
   are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
 
-  if are_we_stopped == "yes" or are_we_moving == "no" and mstatus!="moving"
+  if are_we_stopped == "yes" or are_we_moving == "no"
     moving=0
-  fi
-  
+  end
+
+  if icon_is_visable == "yes"
+    icon_found_count=icon_found_count+1
+    puts "testing: we see the icon and saw it #{icon_check_count} times"
+  else
+    icon_notfound_count=icon_notfound_count+1
+    puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
+  end
+  sleep 2
+
   if destination_selected == 0 and moving==0
-    success=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
+    my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
+    puts "We #{my_message} on our destination."
     destination_selected=1
-    puts "2. lets get going: initial warp"
-    status=double_click(robot,target_location=jump_button_top])
-    jump_count = jump_count + 1
-    moving=0
-    mstatus=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
-  elsif are_we_stopped=="yes" and are_we_moving "no" and in_space == 1 and destination_selected == 1
-    puts "==> We appear to be stopped..."
-    double_click(robot,target_location=jump_button_top)
-    jump_count = jump_count + 1
+  end
+
+  if are_we_stopped=="yes" and are_we_moving == "no" and in_space == 1 and destination_selected == 1
+    puts "We appear to be stopped... clicking align" 
+    my_message=double_click(robot,target_location=align_to_top)
+    puts "We #{my_message} on align_to_top."
     #wait for speed 
-    moving=0
-    mstatus=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
-    #puts in warp
+    are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+    #ship at full speed
+    my_message=double_click(robot,target_location=warp_to_top)
+    puts "We #{my_message} on warp_to_top."
+    jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
     sleep 3
   else
