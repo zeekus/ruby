@@ -24,9 +24,10 @@ class Findtarget
      system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
      puts "#{message}"
      sleep wait_delay
-    end
+    else
       puts "warning missing espeak..."
       puts "#{message}"
+    end
   end
 
   def get_current_mouse_location(robot)
