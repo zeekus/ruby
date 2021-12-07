@@ -287,6 +287,16 @@ def check_clickable(robot,search_element,clicks,icon_left_top,icon_right_bottom,
    end
 end
 
+def wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+  until are_we_moving == "yes" and are_we_stopped == "no"
+    are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
+    are_we_stopped = check_non_clickable(robot,"grey_slow",blue_speed_top,blue_speed_bottom,rgb_color_map)
+    puts "waiting to speeding up..."
+    sleep 3
+  end
+  return "moving"
+end
+
 ###################################################
 #Future - todo - the color map should be put in a json file
 ###################################################
@@ -355,41 +365,38 @@ yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 destination_selected=0
 in_space=1
 jump_count = 0 
+mstatus=""
 
 while in_space==1
+  single_click(robot,ref_point) #click on center of screen
   are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
   are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  if are_we_stopped=="yes" and are_we_moving "no" and in_space == 1 and destination_selected == 1
-    puts "==> We appear to be stopped..."
-    double_click(robot,target_location=jump_button_top)
-    jump_count = jump_count + 1
-    sleep 5
-    are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
-    if are_we_moving == "no"
-      are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
-      if are_we_stopped == "no"
-        puts "we must be speeding up"
-        sleep 5
-      else 
-        puts "slow ass ship."
-      end
-    end
-  else
-    #nothing
-  end
+
+  if are_we_stopped == "yes" or are_we_moving == "no" and mstatus!="moving"
+    moving=0
+  fi
   
-  if destination_selected == 0
+  if destination_selected == 0 and moving==0
     success=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
     destination_selected=1
     puts "2. lets get going: initial warp"
     status=double_click(robot,target_location=jump_button_top])
     jump_count = jump_count + 1
-    sleep 15
+    moving=0
+    mstatus=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+  elsif are_we_stopped=="yes" and are_we_moving "no" and in_space == 1 and destination_selected == 1
+    puts "==> We appear to be stopped..."
+    double_click(robot,target_location=jump_button_top)
+    jump_count = jump_count + 1
+    #wait for speed 
+    moving=0
+    mstatus=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+    #puts in warp
+    puts "jump count is #{jump_count}. We are in warp..."
+    sleep 3
   else
-    if destination_selected == 1 
-      puts "waiting 5 secs. We in jump sequence #{jump_count}"
-      sleep 5
-    end 
-  end  
+    sleep 1 
+  end
+end  
    
 end
