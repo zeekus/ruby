@@ -165,21 +165,34 @@ class Findtarget
       for y in left_top_xy[1]..right_bottom_xy[1]
         count = count + 1
         found_icon_coord=[x,y]
-        mycolors=robot.getPixelColor(x,y)
-        #self.move_mouse_to_target_like_human(robot,tmp)
-        r = mycolors.red
-        g = mycolors.green
-        b = mycolors.blue
+        rgb=robot.getPixelColor(x,y) #RGB color
+        r = rgb.red
+        g = rgb.green
+        b = rgb.blue
         rgb=[r,g,b]
+        hex_string="" #resets hex_string ever iteration
         for color in rgb
-          hex=color.to_s(16).upcase
-          hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
-          hex_string="#{rgb_hex}#{hex}"
+         hex=color.to_s(16).upcase
+         hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+         hex_string="#{hex_string}#{hex}" #RGB color to HEX format
         end
+       
+        # mycolors=robot.getPixelColor(x,y)
+        # #self.move_mouse_to_target_like_human(robot,tmp)
+        # # r = mycolors.red
+        # # g = mycolors.green
+        # # b = mycolors.blue
+        # hex_string=""
+        # rgb_hex=""
+        # for color in mycolors
+        #   hex=color.to_s(16).upcase
+        #   hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+        #   hex_string="#{rgb_hex}#{hex}"
+        # end
 
-        r_hex=r.to_s(16) 
+        #r_hex=r.to_s(16) 
 
-        hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
+        #hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
         my_best_guess=guess_color(r,g,b) 
         if ( target_color == my_best_guess) 
           puts "possible match - The pixel could be #{target_color}"
@@ -272,21 +285,24 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
   if target_location != [0,0]
     mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
     return "yes"
-   else
+  else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
     return "no"
-   end
+  end
 end
 
 def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map)
   mytarget=Findtarget.new
+  mytarget.speak("moving mouse to clickable target")
   target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
    if target_location != [0,0] and target_location != nil 
     mytarget.move_mouse_to_target_like_human(robot,target_location)
     if clicks==1
+      mytarget.speak("single click")
       single_click(robot,target_location)
     else
+      mytarget.speak("double click")
       double_click(robot,target_location)
     end
     return "double clicked"
@@ -296,14 +312,23 @@ def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_
    end
 end
 
-def wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map)
+  mytarget=Findtarget.new
+  mytarget.speak("wait_unit_we_are_moving")
+  are_we_moving="no"
+  are_we_stopped="yes"
   until are_we_moving == "yes" and are_we_stopped == "no"
-    are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
-    are_we_stopped = check_non_clickable(robot,"grey_slow",blue_speed_top,blue_speed_bottom,rgb_color_map)
+    are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map)
+    
+    are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map)
+
+    mytarget.speak("fast_blue check are_we_moving #{are_we_moving} grey_speed check are_we_stopped #{are_we_stopped} ")
     puts "waiting to speeding up..."
     sleep 3
   end
-  return "yes" #we are moving
+  
+  return "yes" #results 
+  
 end
 
 ###################################################
@@ -311,28 +336,31 @@ end
 ###################################################
 #maps for the RGB colors in HEX 
 rgb_color_map={ 
-  "5C467"  => "gold_undock",
-  "5F489"  => "gold_undock",
-  "5B455"  => "gold_undock",
-  "5D478"  => "gold_undock",
-  "508FC5" => "blue_fast",
-  "4F8CC1" => "blue_fast",
-  "5792C4" => "blue_fast",
-  "5290C4" => "blue_fast",
-  "558DBF" => "blue_fast",
-  "508FC4" => "blue_fast",
-  "5690C1" => "blue_fast",
-  "5490C2" => "blue_fast",
-  "5590C3" => "blue_fast",
-  "528FC4" => "blue_fast",
-  "A6A19B" => "grey_slow",
-  "A39E98" => "grey_slow",
-  "A7A29B" => "grey_slow",
-  "A4A099" => "grey_slow",
-  "A4A09A" => "grey_slow",
-  "9E9C97" => "grey_slow",
-  "A5A09A" => "grey_slow",
-  "9C9791" => "grey_slow",
+  # "5C467"  => "gold_undock",
+  # "5F489"  => "gold_undock",
+  # "5B455"  => "gold_undock",
+  # "5D478"  => "gold_undock",
+  "508FC5" => "blue_speed",
+  "4F8CC1" => "blue_speed",
+  "5792C4" => "blue_speed",
+  "5290C4" => "blue_speed",
+  "558DBF" => "blue_speed",
+  "508FC4" => "blue_speed",
+  "5690C1" => "blue_speed",
+  "5490C2" => "blue_speed",
+  "5590C3" => "blue_speed",
+  "528FC4" => "blue_speed",
+  "508CC2" => "blue_speed",
+  "4FC38D" => "blue_speed",
+  "4DC18B" => "blue_speed",
+  "A6A19B" => "grey_speed",
+  "A39E98" => "grey_speed",
+  "A7A29B" => "grey_speed",
+  "A4A099" => "grey_speed",
+  "A4A09A" => "grey_speed",
+  "9E9C97" => "grey_speed",
+  "A5A09A" => "grey_speed",
+  "9C9791" => "grey_speed",
   "605617" => "jtarget_yellow",
   "635A14" => "jtarget_yellow",
   "483D1C" => "jtarget_yellow",
@@ -340,8 +368,6 @@ rgb_color_map={
   "A8A013" => "jtarget_yellow",
   "A29B11" => "jtarget_yellow",
   "514420" => "jtarget_yellow",
-  "B4AEF"  => "jtarget_yellow",
-  "B3ADF"  => "jtarget_yellow",
   "FFFFFF" => "white_icon"}
 
 #test area for above class
@@ -354,7 +380,7 @@ if File.exist?(my_json_file)
   #puts "file exits. opening file..."
   file = File.read(my_json_file)
   data_hash = JSON.load(file) #load in json file holding locations
-fi
+end
 
 #variables come from json
 ref_point=data_hash["screen_center"]
@@ -374,23 +400,29 @@ yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 destination_selected=0
 in_space=1
 jump_count = 0 
-are_we_moving=""
+are_we_moving="no"
+are_we_stopped="yes"
 icon_found_count=0
 icon_notfound_count=0
 
 while in_space==1
+  mytarget.speak("clicking center")
   single_click(robot,ref_point) #click on center of screen
-  are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
-  are_we_moving  = check_non_clickable(robot,"blue_fast",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
 
-  if are_we_stopped == "yes" or are_we_moving == "no"
+  are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  mytarget.speak("are_we_stopped do we see grey #{are_we_stopped}")
+  are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  mytarget.speak("are_we_moving do we see blue #{are_we_moving}")
+  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+  mytarget.speak("icon visible #{icon_is_visable}")
+
+  if are_we_stopped == "yes" and are_we_moving == "no"
     moving=0
   end
 
   if icon_is_visable == "yes"
     icon_found_count=icon_found_count+1
-    puts "testing: we see the icon and saw it #{icon_check_count} times"
+    puts "testing: we see the icon and saw it #{icon_found_count} times"
   else
     icon_notfound_count=icon_notfound_count+1
     puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
@@ -402,15 +434,17 @@ while in_space==1
     puts "We #{my_message} on our destination."
     destination_selected=1
   end
+ 
 
-  if are_we_stopped=="yes" and are_we_moving == "no" and in_space == 1 and destination_selected == 1
+
+  if are_we_stopped=="yes" or are_we_moving == "no" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     puts "We appear to be stopped... clicking align" 
     my_message=double_click(robot,target_location=align_to_top)
     puts "We #{my_message} on align_to_top."
     #wait for speed 
-    are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom)
+    are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map)
     #ship at full speed
-    my_message=double_click(robot,target_location=warp_to_top)
+    my_message=double_click(robot,target_location=jump_button_top)
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
@@ -420,4 +454,3 @@ while in_space==1
   end
 end  
    
-end

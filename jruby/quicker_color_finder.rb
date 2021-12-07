@@ -68,10 +68,10 @@ def guess_color(r,g,b)
 
   acolor ="black" if ( r <  40  and g < 40 and b < 40 ) #black
 
-  acolor ="blue speed" if ( 
+  acolor ="blue_speed" if ( 
    ( r> 65 and r<145) and ( g > 124 and g < 155) and ( b > 155 and b < 200 )
   )  
-  acolor ="grey speed or button" if ( 
+  acolor ="grey_speed or button" if ( 
    ( r> 65 and r<190) and ( g > 65 and g < 190) and ( b > 65 and b < 190 ) and 
    ( 
      ( hue > (r - 5)) and ( hue > (g - 5)) and (hue > (b - 5 )) 
