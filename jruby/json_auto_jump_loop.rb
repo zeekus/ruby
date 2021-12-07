@@ -147,16 +147,16 @@ class Findtarget
     end #end of until loop
   end #end function move_to_target_pixel_like_human
 
-  def color_pixel_scan_in_range(robot,target_color,top_left_pixel,bottom_right_pixel,rgb_color_map) 
+  def color_pixel_scan_in_range(robot,target_color,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map) 
     count=0
     mybreak =0
     found_icon_coord=[]
     found_icon_coord =[0,0] #array location
   
     #scan on x axis main loop
-    for x in top_left_pixel[0]..bottom_right_pixel[0]
+    for x in yellow_icon_left_top[0]..yellow_icon_right_bottom[0]
       #scan on y axis inner loop
-      for y in top_left_pixel[1]..bottom_right_pixel[1]
+      for y in yellow_icon_left_top[1]..yellow_icon_right_bottom[1]
         count = count + 1
         myloc=[] 
         tmp=[x,y]
@@ -207,12 +207,11 @@ end
 def double_click(robot,target_location)
    target=Findtarget.new
    target.move_to_target_pixel_like_human(robot,target_location)
-  
-   for i in (1..2)
-    robot.delay(150)
-    robot.mousePress(InputEvent::BUTTON1_MASK)
-    robot.delay(150)
-    robot.mouseRelease(InputEvent::BUTTON1_MASK)
+    for i in (1..2)  
+      robot.delay(150)
+      robot.mousePress(InputEvent::BUTTON1_MASK)
+      robot.delay(150)
+      robot.mouseRelease(InputEvent::BUTTON1_MASK)
    end
 end
 
@@ -264,27 +263,22 @@ fi
 
 #variables come from json
 ref_point=data_hash["screen_center"]
-yellow_icon_left_top=data_hash["yellow_icon_left_top"]
+align_to_bottom=data_hash["align_to_bottom"]
+align_to_top=data_hash["align_to_top"]
+warp_to_bottom=data_hash["warp_to_bottom"]
+warp_to_top=data_hash["warp_to_top"]
+jump_button_top=data_hash["jump_button_top"]
+jump_button_bottom=data_hash["jump_button_bottom"]
 white_i_icon_top=data_hash["white_i_icon_top"]
 white_i_icon_bottom=data_hash["white_i_icon_bottom"]
+blue_speed_top=data_hash["blue_speed_top"]
+blue_speed_bottom=data_hash["blue_speed_bottom"]
+yellow_icon_left_top=data_hash["yellow_icon_left_top"]
+yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 
 
-top_left_pixel=[1242,217]
-bottom_right_pixel=[1254,725]
-button1_top=[1265,95]
-button1_bottom=[1265,95]
-button2_top=[1288,98]
-button2_bottom=[1288,98]
-button3_top=[1288,98]
-button3_bottom=[1288,98]
-button4_top=[1288,98]
-button4_bottom=[1288,98]
-blue_fast_top=[1288,98]
-blue_fast_bottom=[1288,98]
-blue_slow_top=[1288,98]
-blue_slow_bottom=[1288,98]
 
-location=mytarget.color_pixel_scan_in_range(robot,"jtarget",top_left_pixel,bottom_right_pixel,rgb_color_map)
+location=mytarget.color_pixel_scan_in_range(robot,"jtarget",yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
 
 if location != [0,0]
     mytarget.move_to_target_pixel_like_human(robot,location)
