@@ -255,22 +255,22 @@ def double_click(robot,target_location)
    end
 end
 
-def check_non_clickable(robot,searchable,pixel_left_top,pixel_right_bottom,rgb_color_map)
+def check_non_clickable(robot,search_element,pixel_left_top,pixel_right_bottom,rgb_color_map)
   mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,searchable,pixel_icon_left_top,pixel_icon_right_bottom,rgb_color_map)
+  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,pixel_icon_left_top,pixel_icon_right_bottom,rgb_color_map)
 
   if target_location != [0,0]
     mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
     return "yes"
    else
-    puts "warn: we didn't find the #{searchable} at #{target_location}"
+    puts "warn: we didn't find the #{search_element} at #{target_location}"
     return "no"
    end
 end
 
-def check_clickable(robot,searchable,clicks,icon_left_top,icon_right_bottom,rgb_color_map)
+def check_clickable(robot,search_element,clicks,icon_left_top,icon_right_bottom,rgb_color_map)
   mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,searchable,icon_left_top,icon_right_bottom,rgb_color_map)
+  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,icon_left_top,icon_right_bottom,rgb_color_map)
 
    if target_location != [0,0] and target_location != nil 
     mytarget.move_mouse_to_target_like_human(robot,target_location)
@@ -281,7 +281,7 @@ def check_clickable(robot,searchable,clicks,icon_left_top,icon_right_bottom,rgb_
     end
     return "warping"
    else
-    puts "error: we didn't find the #{searchable} or click"
+    puts "error: we didn't find the #{search_element} or click"
     exit
    end
 end
