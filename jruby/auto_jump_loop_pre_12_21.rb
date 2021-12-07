@@ -158,65 +158,62 @@ class Findtarget
       #scan on y axis inner loop
       for y in top_left_pixel[1]..bottom_right_pixel[1]
         count = count + 1
-        found_icon_coord=[x,y]
+        myloc=[] 
+        tmp=[x,y]
         mycolors=robot.getPixelColor(x,y)
-        #self.move_to_target_pixel_like_human(robot,tmp)
+        self.move_to_target_pixel_like_human(robot,tmp)
         r = mycolors.red
         g = mycolors.green
         b = mycolors.blue
         hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
-        my_best_guess=guess_color(r,g,b) 
-        if ( target_color == my_best_guess) 
-          puts "possible match - The pixel could be #{target_color}"
-          return found_icon_coord
-        elif rgb_color_map[hex_string] != nil and target_color
-          puts "possible match - The pixel could be #{rgb_color_map[hex_string]}"
-          return found_icon_coord
-        else 
-         puts "warning: The pixel color of #{hex_string} is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}"
+        if rgb_color_map[hex_string] != nil and target_color == rgb_color_map[hex_string]
+          puts "possible match - The pixel could be part of the " + rgb_color_map[hex_string]
+          return [x,y]
+        else
+         #nulls will break things
+         puts "warning: The pixel color of #{hex_string} is not mapped. Keep on looking."
         end #if loop
       end  #for y loop 
     end #for x loop
     
-    found_icon_coord =[0,0] #array location
-    return found_icon_coord #nothing found
+    return [0,0] #nothing found
   end
   
   def color_intensity (r,g,b)
     colori = ( r + g + b ) / 3.0
      return colori 
   end
-    
-  def guess_color(r,g,b)
-   my_color = "unknown"
-   hue = self.color_intensity(r,g,b)
-   percent=hue
-  
-   return my_color ="red" if ( r > 200 and g < 50 and b <50 ) #red
    
-   return my_color ="jtarget_yellow" if ( 
-     ( r > 117 and  g > 117 and b < 50 ) and
-     ( (r == g) or ( ( (g - 50) > b) and ( ( r - 50)  > b ) )) 
-   ) #yellow
- 
-   return my_color ="blue" if ( r < 120 and b > 198)  #blue
- 
-   return my_color ="white_icon" if ( r>160 and g> 100 and b > 150 ) #white
- 
-   return my_color ="black" if ( r <  40  and g < 40 and b < 40 ) #black
- 
-   return my_color ="blue_speed" if ( 
-    ( r> 65 and r<145) and ( g > 124 and g < 155) and ( b > 155 and b < 200 )
-   )  
-   return my_color ="grey_speed" if ( 
-    ( r> 65 and r<190) and ( g > 65 and g < 190) and ( b > 65 and b < 190 ) and 
-    ( 
-      ( hue > (r - 5)) and ( hue > (g - 5)) and (hue > (b - 5 )) 
-    ) 
-    )
-    #my_color = "#{my_color}:#{hue}"
-   return my_color
- end
+#   def guess_color(r,g,b)
+#     my_color = "unknown"
+#     hue = color_intensity(r,g,b)
+#     percent=hue
+   
+#     if ( r > 117 and  g > 117 and b < 50 ) and ( (r == g) or ( ( (g - 50) > b) and ( ( r - 50)  > b ) ))
+
+#     acolor ="red" if ( r > 200 and g < 50 and b <50 ) #red
+#     acolor ="yellow" if ( 
+#      ( r > 117 and  g > 117 and b < 50 ) and
+#       ( (r == g) or ( ( (g - 50) > b) and ( ( r - 50)  > b ) )) 
+#     ) #yellow 
+#     acolor ="blue" if ( r < 120 and b > 198)  #blue
+#     acolor ="white" if ( r>160 and g> 100 and b > 150 ) #white
+#     acolor ="black" if ( r <  40  and g < 40 and b < 40 ) #black
+#     acolor ="blue speed" if ( 
+#      ( r> 65 and r<145) and ( g > 124 and g < 155) and ( b > 155 and b < 200 )
+#     )  
+#     acolor ="grey speed or button" if ( 
+#      ( r> 65 and r<190) and ( g > 65 and g < 190) and ( b > 65 and b < 190 ) and 
+#      ( 
+#        ( hue > (r - 5)) and ( hue > (g - 5)) and (hue > (b - 5 )) 
+#      ) 
+#    )
+#     acolor = "#{acolor}:#{hue}"
+#     return acolor
+#    end
+
+
+
 
 end #end class
 
@@ -239,8 +236,8 @@ def single_click(robot,target_location)
 end
 
 def double_click(robot,target_location)
-  target=Findtarget.new
-  target.move_to_target_pixel_like_human(robot,target_location)
+   target=Findtarget.new
+   target.move_to_target_pixel_like_human(robot,target_location)
   
    for i in (1..2)
     robot.delay(150)
@@ -249,41 +246,6 @@ def double_click(robot,target_location)
     robot.mouseRelease(InputEvent::BUTTON1_MASK)
    end
 end
-
-def check_non_clickable(robot,searchable,top_left_pixel,bottom_right_pixel,rgb_color_map)
-  mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,searchable,top_left_pixel,bottom_right_pixel,rgb_color_map)
-
-  if target_location != [0,0]
-    mytarget.move_to_target_pixel_like_human(robot,[1000,1000])
-    return "yes"
-   else
-    puts "warn: we didn't find the #{searchable} at #{target_location}"
-    return "no"
-   end
-end
-
-
-
-def check_clickable(robot,searchable,clicks,top_left_pixel,bottom_right_pixel,rgb_color_map)
-  mytarget=Findtarget.new
-  target_location=mytarget.color_pixel_scan_in_range(robot,searchable,top_left_pixel,bottom_right_pixel,rgb_color_map)
-
-   if target_location != [0,0] and target_location != nil 
-    mytarget.move_to_target_pixel_like_human(robot,target_location)
-    if clicks==1
-      single_click(robot,target_location)
-    else
-      double_click(robot,target_location)
-    end
-    return "warping"
-   else
-    puts "error: we didn't find the #{searchable} or click"
-    exit
-   end
-end
-
-
 
     #maps for the RGB colors in HEX 
     rgb_color_map={ 
@@ -309,22 +271,21 @@ end
         "9E9C97" => "grey_slow",
         "A5A09A" => "grey_slow",
         "9C9791" => "grey_slow",
-        "605617" => "jtarget_yellow",
-        "635A14" => "jtarget_yellow",
-        "483D1C" => "jtarget_yellow",
-        "796B25" => "jtarget_yellow",
-        "A8A013" => "jtarget_yellow",
-        "A29B11" => "jtarget_yellow",
-        "514420" => "jtarget_yellow",
-        "B4AEF"  => "jtarget_yellow",
-        "B3ADF"  => "jtarget_yellow",
+        "605617" => "jtarget",
+        "635A14" => "jtarget",
+        "483D1C" => "jtarget",
+        "796B25" => "jtarget",
+        "A8A013" => "jtarget",
+        "A29B11" => "jtarget",
+        "514420" => "jtarget",
+        "B4AEF"  => "jtarget",
+        "B3ADF"  => "jtarget",
         "FFFFFF" => "white_icon"}
 
 #test area for above class
 robot = Robot.new
 mytarget=Findtarget.new
 
-#need a json or yaml file to hold this info
 black_icon=[900,959]
 black_color_is=9,9,9
 white_icon=[1554,91]
@@ -337,95 +298,16 @@ button2_top=[1288,98]
 button2_bottom=[1288,98]
 button3_top=[1288,98]
 button3_bottom=[1288,98]
-button4_top=[1519,101]    #icon
-button4_bottom=[1512,102] #icon
+button4_top=[1288,98]
+button4_bottom=[1288,98]
 blue_fast_top=[1288,98]
 blue_fast_bottom=[1288,98]
 blue_slow_top=[1288,98]
 blue_slow_bottom=[1288,98]
 
-did_we_clickon_the_destination=0
-we_in_warp=0
-in_space=1
-jump = 0 
+location=mytarget.color_pixel_scan_in_range(robot,"jtarget",top_left_pixel,bottom_right_pixel,rgb_color_map)
 
-while in_space==1
-  #check for icon on top
-  #do_we_see_the_icon = check_non_clickable(robot,"white_icon",[1517,100],[1517,101],rgb_color_map)
-  are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
-  are_we_moving  = check_non_clickable(robot,"blue_fast",blue_fast_top,blue_fast_bottom,rgb_color_map)
-  if are_we_stopped=="yes"
-    puts "==> We appear to be stopped..."
-    if are_we_moving == "no"
-      double_click(robot,target_location=[1323,97])
-      jump = jump + 1
-      sleep 5
-      are_we_moving  = check_non_clickable(robot,"blue_fast",blue_fast_top,blue_fast_bottom,rgb_color_map)
-      if are_we_moving == "no"
-        are_we_stopped = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map)
-        if are_we_stopped == "no"
-          puts "we must be speeding up"
-          sleep 5
-        else 
-          puts "slow ass ship."
-        end
-      end
-    end
-  else
-    #nothing
-  end
-  
-  if did_we_clickon_the_destination == 0
-    success=check_clickable(robot,"jtarget_yellow",clicks=1,top_left_pixel,bottom_right_pixel,rgb_color_map)
-    did_we_clickon_the_destination=1
-    puts "2. lets get going: initial warp"
-    status=double_click(robot,target_location=[1323,97])
-    jump = jump + 1
-    sleep 15
-  else
-    if did_we_clickon_the_destination == 1 
-      puts "waiting 5 secs. We in jump sequence #{jump}"
-      sleep 5
-    end 
-  end
-    
-  # result_gray = check_non_clickable(robot,"grey_slow",blue_slow_top,blue_slow_bottom,rgb_color_map) 
-  # result_blue = check_non_clickable(robot,"blue_fast",blue_fast_top,blue_fast_bottom,rgb_color_map)
-
-  # if result_gray=="color found"
-  #   puts "stopped or jumping..."
-  #   icon_check = check_non_clickable(robot,"white_icon",[1520,97],[1521,98],rgb_color_map)
-        
-  #   if icon_check == "color not found"
-  #     sleep 5
-  #   else 
-  #     #check blue
-  #     result_blue = check_non_clickable(robot,"blue_fast",blue_fast_top,blue_fast_bottom,rgb_color_map)
-  #     if result_blue=="color not found"
-  #       double_click(robot,target_location=[1323,97])
-  #     end
-  #   end
-  # end
-
-
-  # elif result_gray=="color not found" and result_blue=="color found"
-  #   puts "warping: we are probably warping."
-  #   we_are_in_warp=1
-  # elif result_gray=="color found" and result_blue=="color not found" and we_are_in_warp==1
-  #   puts "jumping or not moving."
-  #   we_are_in_warp=0
-  #   sleep 5
-  # elif we_are_no_in_warp == 1 and result_gray == "color found"
-  #   puts "looks like we may be stopped"
-  #   icon_check = check_non_clickable(robot,"white_icon",[1520,97],[1521,98],rgb_color_map)
-  #   if icon_check == "color found"
-  #     puts "double clicking to get moving again."
-  #     double_click(robot,target_location=[1323,97])
-  #     we_are_in_warp=1
-  #     sleep 5
-  #   end
-  # else
-  #   puts "not sure our state."
-  # end
-   
+if location != [0,0]
+    mytarget.move_to_target_pixel_like_human(robot,location)
+    single_click(robot,target_location)
 end
