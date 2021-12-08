@@ -275,7 +275,7 @@ blue_speed_top=data_hash["blue_speed_top"]
 blue_speed_bottom=data_hash["blue_speed_bottom"]
 yellow_icon_left_top=data_hash["yellow_icon_left_top"]
 yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
-
+gold_undock=data_hash["gold_undock"]
 
 
 location=mytarget.color_pixel_scan_in_range(robot,"jtarget",yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
