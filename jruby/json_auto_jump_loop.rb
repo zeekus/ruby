@@ -173,26 +173,10 @@ class Findtarget
         hex_string="" #resets hex_string ever iteration
         for color in rgb
          hex=color.to_s(16).upcase
-         hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+         hex = "0#{hex}" if hex.length < 2 #length of each HEX octet is always 2
          hex_string="#{hex_string}#{hex}" #RGB color to HEX format
         end
        
-        # mycolors=robot.getPixelColor(x,y)
-        # #self.move_mouse_to_target_like_human(robot,tmp)
-        # # r = mycolors.red
-        # # g = mycolors.green
-        # # b = mycolors.blue
-        # hex_string=""
-        # rgb_hex=""
-        # for color in mycolors
-        #   hex=color.to_s(16).upcase
-        #   hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
-        #   hex_string="#{rgb_hex}#{hex}"
-        # end
-
-        #r_hex=r.to_s(16) 
-
-        #hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
         my_best_guess=guess_color(r,g,b) 
         if ( target_color == my_best_guess) 
           puts "possible match - The pixel could be #{target_color}"
@@ -312,19 +296,16 @@ def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_
    end
 end
 
-def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map)
+def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
   mytarget=Findtarget.new
   mytarget.speak("wait_unit_we_are_moving")
   are_we_moving="no"
   are_we_stopped="yes"
   until are_we_moving == "yes" and are_we_stopped == "no"
     are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map)
-    
     are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map)
-
-    mytarget.speak("fast_blue check are_we_moving #{are_we_moving} grey_speed check are_we_stopped #{are_we_stopped} ")
+    mytarget.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
-    sleep 3
   end
   
   return "yes" #results 
@@ -335,11 +316,10 @@ end
 #Future - todo - the color map should be put in a json file
 ###################################################
 #maps for the RGB colors in HEX 
-rgb_color_map={ 
-  # "5C467"  => "gold_undock",
-  # "5F489"  => "gold_undock",
-  # "5B455"  => "gold_undock",
-  # "5D478"  => "gold_undock",
+rgb_color_map={
+  "5C0545" => "gold_undock",
+  "590342" => "gold_undock",
+  "5C0546" => "gold_undock", 
   "508FC5" => "blue_speed",
   "4F8CC1" => "blue_speed",
   "5792C4" => "blue_speed",
@@ -405,21 +385,24 @@ are_we_stopped="yes"
 icon_found_count=0
 icon_notfound_count=0
 
+debug=0
+
 while in_space==1
-  mytarget.speak("clicking center")
-  single_click(robot,ref_point) #click on center of screen
-
-  are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("are_we_stopped do we see grey #{are_we_stopped}")
-  are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("are_we_moving do we see blue #{are_we_moving}")
-  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-  mytarget.speak("icon visible #{icon_is_visable}")
-
-  if are_we_stopped == "yes" and are_we_moving == "no"
-    moving=0
+  if destination_selected == 0 # only need this once to set state
+    mytarget.speak("clicking center") 
+    single_click(robot,ref_point) #click on center of screen 
   end
 
+  are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  mytarget.speak("are_we_stopped do we see grey #{are_we_stopped}") if debug==1
+
+  are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  mytarget.speak("are_we_moving do we see blue #{are_we_moving}") if debug==1
+
+  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+  mytarget.speak("icon visible #{icon_is_visable}") if debug ==1
+
+  
   if icon_is_visable == "yes"
     icon_found_count=icon_found_count+1
     puts "testing: we see the icon and saw it #{icon_found_count} times"
@@ -429,28 +412,37 @@ while in_space==1
   end
   sleep 2
 
-  if destination_selected == 0 and moving==0
+  if destination_selected == 0 and are_we_stopped=="yes"
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
     puts "We #{my_message} on our destination."
     destination_selected=1
   end
- 
 
-
-  if are_we_stopped=="yes" or are_we_moving == "no" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
+  if are_we_stopped=="yes" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     puts "We appear to be stopped... clicking align" 
     my_message=double_click(robot,target_location=align_to_top)
     puts "We #{my_message} on align_to_top."
     #wait for speed 
-    are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map)
+    are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+    mytarget.speak("alignment complete")
     #ship at full speed
     my_message=double_click(robot,target_location=jump_button_top)
+    mytarget.speak("press jump_buton complete")
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
-    sleep 3
+    #in_warp monitor the icon 
+    #This might get buggy on super long jumps - wont work in null sec space
+    until icon_is_visable=="no"
+      sleep 1
+      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+    end
+    until icon_is_visable=="yes"
+      sleep 1
+      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+    end
+    mytarget.speak("jump complete")
   else
     sleep 1 
   end
 end  
-   

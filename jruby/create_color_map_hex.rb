@@ -68,11 +68,11 @@ while counter <= stop_number  do
  hex_string="" #resets hex_string ever iteration
  for color in rgb
   hex=color.to_s(16).upcase
-  hex = "00" if hex == "0" #length should be 2 for Hex numbers but they don't always translate right
+  hex = "0#{hex}" if hex.length < 2 #length of each HEX octet is always 2
   hex_string="#{hex_string}#{hex}" #RGB color to HEX format
  end
 
- color_map_sting="\"#{hex_string} => #{label}\""
+ color_map_sting="\"#{hex_string}\" => \"#{label}\""
  array_of_colors.push(color_map_sting)
  print "while loop: location [#{x},#{y}] has the color r=#{rgb[0]},g=#{rgb[1]},b=#{rgb[2]} hex: #{hex_string}\n"
  speak("move to a different pixel")
