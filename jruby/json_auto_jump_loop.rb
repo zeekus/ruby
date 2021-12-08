@@ -387,11 +387,19 @@ icon_found_count=0
 icon_notfound_count=0
 
 debug=0
+cloaking_ship=0
 
 while in_space==1 
   if destination_selected == 0 # only need this once to set state
     mytarget.speak("clicking center") 
     single_click(robot,ref_point) #click on center of screen 
+    #check and click on the destination indicator
+    my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
+    puts "We #{my_message} on our destination."
+    destination_selected=1
+    #stop ship 
+    mytarget.speak("stop the ship if it is moving")
+    sleep 5
   end
 
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
@@ -414,10 +422,7 @@ while in_space==1
   sleep 2
 
   if destination_selected == 0 and are_we_stopped=="yes"
-    #check and click on the destination indicator
-    my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
-    puts "We #{my_message} on our destination."
-    destination_selected=1
+
   end
 
   if are_we_stopped=="yes" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
@@ -440,7 +445,7 @@ while in_space==1
     #Hit the jump button 
     ####################
     my_message=double_click(robot,target_location=jump_button_top)
-    mytarget.speak("jump_buton")
+    mytarget.speak("jump")
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
@@ -456,7 +461,7 @@ while in_space==1
       sleep 1
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
       gold_undock_is_visable = check_non_clickable(robot,"gold_undock",gold_undock,gold_undock,rgb_color_map)
-      if gold_undock_is_visable
+      if gold_undock_is_visable=="yes"
         in_space=0
         break 
       end
