@@ -3,8 +3,7 @@
 #description: function looks for active log file and then reads the messages. We only pull the relevant new data.
 require 'time'
 
-home=Dir.home
-logfile_loc_glob="#{home}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+
 
 def is_log_entry_current(loginfo,counter)
   debug=0
@@ -31,13 +30,17 @@ def is_log_entry_current(loginfo,counter)
   end
 end
 
+#get lastest log file 
+home=Dir.home
+logfile_loc_glob="#{home}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
 
 #####################
 #find latest log file
 #####################
 ##bash equivalent
 ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
-myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+
 
 puts myfile
 

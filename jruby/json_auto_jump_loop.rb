@@ -4,6 +4,9 @@
 
 require 'java'
 require 'json'
+require 'time'
+
+
 
 java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.event.InputEvent' #moves mouse and typing
@@ -14,6 +17,7 @@ java_import 'java.awt.Toolkit'          #gets screens size
 
 #use http://www.drpeterjones.com/colorcalc to verify colors
 #blue range r(70-134),g(130-180),b(170-200)
+
 
 
 class Findtarget
@@ -185,7 +189,7 @@ class Findtarget
           puts "possible match - The pixel could be #{rgb_color_map[hex_string]}"
           return found_icon_coord
         else 
-         puts "warning: The pixel color of #{hex_string} is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}"
+         puts "warning: The pixel color of #{hex_string} at [#{x},#{y}] is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}"
         end #if loop
       end  #for y loop 
     end #for x loop
@@ -267,7 +271,7 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
   target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
   if target_location != [0,0]
-    mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
+    #mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
@@ -312,6 +316,69 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
   
 end
 
+
+
+def is_log_entry_current(loginfo,counter)
+  debug=0
+  #log date time parser
+
+  #string stripping 
+  logtime=loginfo.gsub(/\(.*/,"").chomp                   #remove everything after the "(" character in the line
+  logtime=loginfo.gsub(/(\[|\])/,"").chomp.strip          #remove brackets around the string and extra spaces aound the string
+
+  #converting log time to usable format. Time source from log looks like [ 2021.12.02 19:21:20 UTC ].
+  #Log example: [ 2021.12.01 21:50:52 ] (question) Are you sure you want to quit the game?
+  logtime=DateTime.strptime(logtime, '%Y.%m.%d %H:%M:%S') #convert logtime sting to usable variable
+  logtime_secs=logtime.strftime("%s")                     #convert time to seconds
+  puts "debug log time- logtime_secs #{logtime_secs}" if debug==1
+
+
+  current_secs=Time.now.utc.strftime("%s")                #our logs get current time in UTC seconds
+  puts "debug - current_secs #{current_secs}" if debug==1
+  diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
+  puts "debug: diff is #{diff}" if debug==1
+  if diff < 10
+    return 1 
+  else
+    return 0
+  end
+end
+
+def read_last_lines_of_log()
+  home=Dir.home
+  logfile_loc_glob="#{home}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+  myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } #get lastest log file 
+
+  #get size of the file
+  lines=File.open(myfile,"r")
+  filesize=lines.readlines.size
+
+  #get last 5 lines of the log
+  last_5=IO.readlines(lines)[-5..-1]
+
+  counter=0
+  old_results=0
+
+  last_5.each do |line|
+    if /^\[/.match(line) #sometimes the lines don't have the time ignore them 
+      result=is_log_entry_current(line.chomp,counter)
+      if result==1
+        counter=counter+1
+        if line =~ /umping/
+          speak=line.split("(None) ")[1]
+          return speak
+        else 
+          #nothing
+          break
+        end
+        puts "new line: #{line}"
+     else 
+      old_results=old_results+1
+     end
+    end
+  end
+end
+
 ###################################################
 #Future - todo - the color map should be put in a json file
 ###################################################
@@ -341,6 +408,8 @@ rgb_color_map={
   "9E9C97" => "grey_speed",
   "A5A09A" => "grey_speed",
   "9C9791" => "grey_speed",
+  "A4999E" => "grey_speed",
+  "A3979D" => "grey_speed",
   "605617" => "jtarget_yellow",
   "635A14" => "jtarget_yellow",
   "483D1C" => "jtarget_yellow",
@@ -386,7 +455,7 @@ are_we_stopped="yes"
 icon_found_count=0
 icon_notfound_count=0
 
-debug=0
+debug=1
 cloaking_ship=0
 
 while in_space==1 
@@ -399,17 +468,17 @@ while in_space==1
     destination_selected=1
     #stop ship 
     mytarget.speak("stop the ship if it is moving")
-    sleep 5
+    sleep 2
   end
 
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("are_we_stopped do we see grey #{are_we_stopped}") if debug==1
+  mytarget.speak("L1 are_we_stopped do we see grey #{are_we_stopped}") if debug==1
 
   are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("are_we_moving do we see blue #{are_we_moving}") if debug==1
+  mytarget.speak("L2 are_we_moving do we see blue #{are_we_moving}") if debug==1
 
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-  mytarget.speak("icon visible #{icon_is_visable}") if debug ==1
+  mytarget.speak("L3 icon visible #{icon_is_visable}") if debug ==1
 
   
   if icon_is_visable == "yes"
@@ -457,8 +526,20 @@ while in_space==1
     #NOT tested for NULL space and long jumps
     #need to add in logic to handle super long jumps. maybe monitor the blue speed bar
     ##################
-    until icon_is_visable=="no"
+    
+    jumping=0
+
+    #until icon_is_visable=="no" and jumping==1
+    until jumping==1
       sleep 1
+      last_log_message_current=""
+      last_log_message_current=read_last_lines_of_log()
+      if last_log_message_current != ""
+        mytarget.speak(last_log_message_current)
+        jumping=1
+        sleep 10
+        break
+      end
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
       gold_undock_is_visable = check_non_clickable(robot,"gold_undock",gold_undock,gold_undock,rgb_color_map)
       if gold_undock_is_visable=="yes"
@@ -466,8 +547,8 @@ while in_space==1
         break 
       end
     end
+ 
     until icon_is_visable=="yes"
-      sleep 1
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
     end
     mytarget.speak("jump #{jump_count}")
