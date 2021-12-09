@@ -296,13 +296,13 @@ def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_
 
    if target_location != [0,0] and target_location != nil 
     mytarget.move_mouse_to_target_like_human(robot,target_location)
-    if clicks==1
+    # if clicks==1
       mytarget.speak("single click")
       single_click(robot,target_location)
-    else
-      mytarget.speak("double click")
-      double_click(robot,target_location)
-    end
+    # else
+    #   mytarget.speak("double click")
+    #   double_click(robot,target_location)
+    # end
     return "double clicked"
    else
     puts "error: we didn't find the #{search_element} or click"
@@ -347,7 +347,7 @@ def is_log_entry_current(loginfo)
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 10
+  if diff < 25 #25 second theshold
     return 1 
   else
     return 0
@@ -381,6 +381,8 @@ def log_reader()
     puts "missing file #{myfile} exiting"
     exit
   end
+
+ 
   
  #  puts "is file_data an array ?"
  #  p file_data.instance_of? Array
@@ -388,15 +390,24 @@ def log_reader()
   last_3=file_data[-3..-1]  #get last 3 lines of the file_data
  #  puts "is last_3 an array ?"
  #  p last_3.instance_of? Array
+
+  #initialize variables
+  dock_string=""
+  jump_string="" 
  
   last_3.each do |line|  #look at it
     if /^\[/.match(line) #sometimes the lines don't have the time ignore them
       result=is_log_entry_current(line.chomp) #current log entry only
       if result ==1
-         string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
-         # puts "is string an array ?"
-         # p string.instance_of? Array
-         return string
+        # puts "is string an array ?"
+        # p string.instance_of? Array
+        if line =~ /Requested to dock/i
+          dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
+          return dock_string #end of journey see this
+        else 
+          jump_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+          return jump_string
+        end
       end
     end
    end
@@ -554,6 +565,10 @@ while in_space==1
        puts parsed_log
        mytarget.speak(parsed_log)
        jump_seq_complete=1
+     end
+     if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
+       mytarget.speak("docking finished")
+       exit 
      end
     end
 

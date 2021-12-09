@@ -20,7 +20,7 @@ def is_log_entry_current(loginfo)
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 10
+  if diff < 60 #60 seconds should be safe
     return 1 
   else
     return 0
