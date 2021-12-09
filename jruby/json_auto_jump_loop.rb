@@ -1,12 +1,10 @@
 #!/usr/bin/jruby
 #filename: automatic_moving.rb
-#description: moves ship from system to system.
+#description: moves ship from system to system until docking.
 
 require 'java'
 require 'json'
 require 'time'
-
-
 
 java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.event.InputEvent' #moves mouse and typing
@@ -17,8 +15,6 @@ java_import 'java.awt.Toolkit'          #gets screens size
 
 #use http://www.drpeterjones.com/colorcalc to verify colors
 #blue range r(70-134),g(130-180),b(170-200)
-
-
 
 class Findtarget
 
@@ -40,15 +36,6 @@ class Findtarget
     self.mydebugger("get_current_mouse_location", "under mouse location", "[#{x},#{y}]" ) 
     return [x,y]
   end
-
-  def get_random_point 
-    myloc=[]
-    x = rand(1000) #limit
-    y = rand(1000) #limit 
-    myloc=[x,y]
-    self.mydebugger("get_random_point", "future location is", myloc ) 
-    return myloc
-  end# end get_random_point
 
   def mydebugger(myfuncname,myfillerstring,mylocations)
     if $debug==1
