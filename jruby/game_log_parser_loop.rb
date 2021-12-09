@@ -2,9 +2,9 @@
 #filename: game_log_parser.rb
 #description: function looks for active log file and then reads the messages. We only pull the relevant new data.
 require 'time'
-
 def is_log_entry_current(loginfo)
   debug=0
+  #log date time parser
 
   #string stripping 
   logtime=loginfo.gsub(/\(.*/,"").chomp                   #remove everything after the "(" character in the line
@@ -16,11 +16,12 @@ def is_log_entry_current(loginfo)
   logtime_secs=logtime.strftime("%s")                     #convert time to seconds
   puts "debug log time- logtime_secs #{logtime_secs}" if debug==1
 
+
   current_secs=Time.now.utc.strftime("%s")                #our logs get current time in UTC seconds
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 60 #60 seconds should be safe
+  if diff < 25 #25 second theshold
     return 1 
   else
     return 0
@@ -28,53 +29,65 @@ def is_log_entry_current(loginfo)
 end
 
 def log_reader()
- #####################
- #find latest log file
- #####################
- ##bash equivalent
- ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
- my_homedir=Dir.home
- logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
-
- myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
- if File.exists?(myfile)
-   puts "debug my last log is #{myfile}"
-   file=File.open(myfile) #read file
-   file_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
-   file.close #closing file
-   filesize=0  #get size of the file
-   filesize=file_data.size
-   puts "'debug gamelog file has #{filesize}' lines"
-   #only run if file size is greater than 5
-   if filesize < 5
-    puts "exiting. Listener is active but file is too small. Try exiting the station."
-    exit
-   end
- else 
-   puts "missing file #{myfile} exiting"
-   exit
- end
+  #####################
+  #find latest log file
+  #####################
+  ##bash equivalent
+  ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
+  my_homedir=Dir.home
+  logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
  
-#  puts "is file_data an array ?"
-#  p file_data.instance_of? Array
+  myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+  if File.exists?(myfile)
+    puts "debug my last log is #{myfile}"
+    file=File.open(myfile) #read file
+    file_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
+    file.close #closing file
+    filesize=0  #get size of the file
+    filesize=file_data.size
+    puts "'debug gamelog file has #{filesize}' lines"
+    #only run if file size is greater than 5
+    if filesize < 5
+     puts "exiting. Listener is active but file is too small. Try exiting the station."
+     exit
+    end
+  else 
+    puts "missing file #{myfile} exiting"
+    exit
+  end
 
- last_3=file_data[-3..-1]  #get last 3 lines of the file_data
-#  puts "is last_3 an array ?"
-#  p last_3.instance_of? Array
+ 
+  
+ #  puts "is file_data an array ?"
+ #  p file_data.instance_of? Array
+ 
+  last_3=file_data[-3..-1]  #get last 3 lines of the file_data
+ #  puts "is last_3 an array ?"
+ #  p last_3.instance_of? Array
 
- last_3.each do |line|  #look at it
-   if /^\[/.match(line) #sometimes the lines don't have the time ignore them
-     result=is_log_entry_current(line.chomp) #current log entry only
-     if result ==1
-        string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+  #initialize variables
+  dock_string=""
+  jump_string="" 
+ 
+  last_3.each do |line|  #look at it
+    if /^\[/.match(line) #sometimes the lines don't have the time ignore them
+      result=is_log_entry_current(line.chomp) #current log entry only
+      if result ==1
         # puts "is string an array ?"
         # p string.instance_of? Array
-        return string
-     end
+        if line =~ /Requested to dock/i
+          dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
+          return dock_string #end of journey see this
+        else 
+          jump_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+          return jump_string
+        end
+      end
+    end
    end
-  end
-  return "" #return an empty string to prevent an object pointer from getting returned and messsing up things
-end
+   return "" #return an empty string to prevent an object pointer from getting returned and messsing up things
+ end
+
 
   
   #start of prototype loop
