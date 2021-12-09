@@ -378,6 +378,15 @@ def log_reader()
   ##issues The array to string conversion is creating issues here.
   #######
   #get last 3 lines of the log
+  #PROBLEM
+  ###We 1..2 on warp_to_top.
+  ##jump count is 1. We are in warp...
+  ##waiting for completion
+  ##'debug filesize has 1926' lines
+  ##[ 2021.12.09 04:59:11 ] (notify) You cannot do that while warping.
+  ##[ 2021.12.09 04:59:49 ] (None) Jumping from Sarum Prime to Amarr
+  ##[ 2021.12.09 05:08:17 ] (notify) You cannot do that while warping.
+  ##["[ 2021.12.09 04:59:11 ] (notify) You cannot do that while warping.\r\n", "[ 2021.12.09 04:59:49 ] (None) Jumping from Sarum Prime to Amarr\r\n", "[ 2021.12.09 05:08:17 ] (notify) You cannot do that while warping.\r\n"]
   last_3=IO.readlines(myfile)[-3..-1]
   last_3.each do |line|
     if /^\[/.match(line)#sometimes the lines don't have the time ignore them
