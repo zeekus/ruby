@@ -268,14 +268,24 @@ end
 
 def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
   mytarget=Findtarget.new
+
   target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
   if target_location != [0,0]
-    #mytarget.move_mouse_to_target_like_human(robot,[1000,1000])
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
-    return "no"
+    if search_element=="grey_speed" #gray and white look very similar so we check for both
+      #check for white it sometimes changes to that color
+      target_location=mytarget.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map)
+      if target_location != [0,0]
+        return "yes" #this was white but in the grey search area
+      else
+        return "no" #we are sure this grey
+      end
+    end
+
+    return "no" # none grey
   end
 end
 
@@ -318,7 +328,7 @@ end
 
 
 
-def is_log_entry_current(loginfo,counter)
+def is_log_entry_current(loginfo)
   debug=0
   #log date time parser
 
@@ -344,40 +354,43 @@ def is_log_entry_current(loginfo,counter)
   end
 end
 
-def read_last_lines_of_log()
-  home=Dir.home
-  logfile_loc_glob="#{home}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
-  myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } #get lastest log file 
-
-  #get size of the file
-  lines=File.open(myfile,"r")
-  filesize=lines.readlines.size
-
-  #get last 5 lines of the log
-  last_5=IO.readlines(lines)[-5..-1]
-
-  counter=0
-  old_results=0
-
-  last_5.each do |line|
-    if /^\[/.match(line) #sometimes the lines don't have the time ignore them 
-      result=is_log_entry_current(line.chomp,counter)
-      if result==1
-        counter=counter+1
-        if line =~ /umping/
-          speak=line.split("(None) ")[1]
-          return speak
-        else 
-          #nothing
-          break
-        end
-        puts "new line: #{line}"
-     else 
-      old_results=old_results+1
-     end
-    end
+def log_reader()
+  #####################
+  #find latest log file
+  #####################
+  ##bash equivalent
+  ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
+  logfile_loc_glob="/home/zteddy/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+  myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+ 
+  filesize=0  #get size of the file
+  file=File.open(myfile,"r")
+  filesize=file.readlines.size
+  puts "'debug filesize has #{filesize}' lines"
+ 
+  #only run if file size is greater than 5
+  if filesize < 5
+   puts "exiting. Listener is active but file is too small. Try exiting the station."
+   exit
   end
-end
+  #######
+  ##This part is buggy not working as expected.
+  ##issues The array to string conversion is creating issues here.
+  #######
+  #get last 3 lines of the log
+  last_3=IO.readlines(myfile)[-3..-1]
+  last_3.each do |line|
+    if /^\[/.match(line)#sometimes the lines don't have the time ignore them
+      if ! /notify/.match(line)# ignore lines with notify
+        result=is_log_entry_current(line.chomp) #current log entry only
+        if result ==1
+         array = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+         return array.to_s.chomp #convert array to string
+        end
+      end
+    end
+   end
+ end
 
 ###################################################
 #Future - todo - the color map should be put in a json file
@@ -410,6 +423,9 @@ rgb_color_map={
   "9C9791" => "grey_speed",
   "A4999E" => "grey_speed",
   "A3979D" => "grey_speed",
+  "A29A9F" => "grey_speed",
+  "A69CA3" => "grey_speed",
+  "A69CA2" => "grey_speed",
   "605617" => "jtarget_yellow",
   "635A14" => "jtarget_yellow",
   "483D1C" => "jtarget_yellow",
@@ -460,25 +476,25 @@ cloaking_ship=0
 
 while in_space==1 
   if destination_selected == 0 # only need this once to set state
-    mytarget.speak("clicking center") 
+    mytarget.speak("center") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the destination indicator
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
     puts "We #{my_message} on our destination."
     destination_selected=1
     #stop ship 
-    mytarget.speak("stop the ship if it is moving")
+    mytarget.speak("stop ")
     sleep 2
   end
 
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("L1 are_we_stopped do we see grey #{are_we_stopped}") if debug==1
+  mytarget.speak("L1 grey #{are_we_stopped}") if debug==1
 
   are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("L2 are_we_moving do we see blue #{are_we_moving}") if debug==1
+  mytarget.speak("L2 blue #{are_we_moving}") if debug==1
 
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-  mytarget.speak("L3 icon visible #{icon_is_visable}") if debug ==1
+  mytarget.speak("L3 icon #{icon_is_visable}") if debug ==1
 
   
   if icon_is_visable == "yes"
@@ -489,10 +505,6 @@ while in_space==1
     puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
   end
   sleep 2
-
-  if destination_selected == 0 and are_we_stopped=="yes"
-
-  end
 
   if are_we_stopped=="yes" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     if cloaking_ship == 1
@@ -519,39 +531,33 @@ while in_space==1
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
 
-    #################
-    #WAITING for a jump to successfully complete
-    #KNOWN LIMITATION - possible buggy area. May bug out on long jumps.
-    #Assumption: ship will be able to make a jump from gate to gate in one iteration of this sequence.
-    #NOT tested for NULL space and long jumps
-    #need to add in logic to handle super long jumps. maybe monitor the blue speed bar
-    ##################
-    
-    jumping=0
+    jump_seq_complete=0 
+    mytarget.speak("waiting for completion")
 
-    #until icon_is_visable=="no" and jumping==1
-    until jumping==1
-      sleep 1
-      last_log_message_current=""
-      last_log_message_current=read_last_lines_of_log()
-      if last_log_message_current != ""
-        mytarget.speak(last_log_message_current)
-        jumping=1
-        sleep 10
-        break
-      end
-      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-      gold_undock_is_visable = check_non_clickable(robot,"gold_undock",gold_undock,gold_undock,rgb_color_map)
-      if gold_undock_is_visable=="yes"
-        in_space=0
-        break 
-      end
+    jump_seq_complete=0
+    #wait until log says jump is complete
+    until jump_seq_complete==1
+     sleep 1
+     parsed_log=log_reader() #gives an array for some reason
+     if parsed_log.to_s =~ /jumping/i 
+       puts parsed_log
+       mytarget.speak(parsed_log)
+       jump_seq_complete=1
+     end
     end
- 
-    until icon_is_visable=="yes"
-      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-    end
-    mytarget.speak("jump #{jump_count}")
+
+    #gold_undock_is_visable = check_non_clickable(robot,"gold_undock",gold_undock,gold_undock,rgb_color_map)
+
+    #if gold_undock_is_visable=="yes"
+      #in_space=0
+      #exit 
+    #end
+  
+  #verify icon refeshed and jump squence really finished
+  until icon_is_visable=="yes"
+    icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+  end
+  mytarget.speak("jump #{jump_count}")
   else
     sleep 1 
   end
