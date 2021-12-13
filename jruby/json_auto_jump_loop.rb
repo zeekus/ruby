@@ -1,6 +1,7 @@
 #!/usr/bin/jruby
-#filename: automatic_moving.rb
+#filename: json_auto_jump_loop.rb
 #description: moves ship from system to system until docking.
+#requires a location.json file to exist. 
 
 require 'java'
 require 'json'
@@ -16,7 +17,8 @@ java_import 'java.awt.Toolkit'          #gets screens size
 #use http://www.drpeterjones.com/colorcalc to verify colors
 #blue range r(70-134),g(130-180),b(170-200)
 
-class Findtarget
+
+class Action
 
   def speak(message)
     if File.exist?("/usr/bin/espeak")  
@@ -189,7 +191,9 @@ class Findtarget
     colori = ( r + g + b ) / 3.0
      return colori 
   end
-    
+
+  #Note: guess_color needs a rewrite. The logic her is not accurate. Grey vs white. The colors that are easier to detect should be higher. 
+  #not very accurate
   def guess_color(r,g,b)
    my_color = "unknown"
    hue = self.color_intensity(r,g,b)
@@ -221,15 +225,24 @@ class Findtarget
    return my_color
  end
 
+ def hit_the_jump_button(robot,target_location,jump_count)
+  #Hit the press the jump button 
+  my_message=double_click(robot,target_location=jump_button_top)
+  self.speak("jump")
+  puts "We #{my_message} on warp_to_top."
+  jump_count = jump_count + 1
+  puts "jump count is #{jump_count}. We are in warp..."
+  return jump_count
+end
+
 end #end class
 
 
 def single_click(robot,target_location)
 
-   #simulate_human_mouse_movement(robot,target_location) 
+   #move the pointer to the target location like a human before clicking 
    #target_location=[x,y]
-    
-   target=Findtarget.new
+   target=Action.new
    target.move_mouse_to_target_like_human(robot,target_location)
   
    #left click
@@ -238,11 +251,12 @@ def single_click(robot,target_location)
    robot.delay(155)
    #logwrite("event: single unclick at #{x},#{y}")
    robot.mouseRelease(InputEvent::BUTTON1_MASK)
-   robot.delay(155)
 end
 
 def double_click(robot,target_location)
-  target=Findtarget.new
+  #move the pointer to the target location like a human before clicking 
+  #target_location=[x,y]
+  target=Action.new
   target.move_mouse_to_target_like_human(robot,target_location)
   
    for i in (1..2)
@@ -254,43 +268,37 @@ def double_click(robot,target_location)
 end
 
 def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
-  mytarget=Findtarget.new
 
-  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
+  #scan region of screen without moving the mouse
+  my_action=Action.new
+  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
   if target_location != [0,0]
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
-    if search_element=="grey_speed" #gray and white look very similar so we check for both
-      #check for white it sometimes changes to that color
-      target_location=mytarget.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map)
+    if search_element=="grey_speed" ##workaround for grey - grey and white look very similar. 
+      target_location=my_action.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map)
       if target_location != [0,0]
         return "yes" #this was white but in the grey search area
       else
-        return "no" #we are sure this grey
+        return "no" #we are sure this isn't grey or white.
       end
     end
 
-    return "no" # none grey
+    return "no" # if all else fails we return no
   end
 end
 
-def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map)
-  mytarget=Findtarget.new
-  mytarget.speak("moving mouse to clickable target")
-  target_location=mytarget.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
+def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map) 
+  #move the pointer to the target location like a human before clicking 
+  my_action=Action.new
+  my_action.speak("scanning for clickable target")
+  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
 
    if target_location != [0,0] and target_location != nil 
-    mytarget.move_mouse_to_target_like_human(robot,target_location)
-    # if clicks==1
-      mytarget.speak("single click")
       single_click(robot,target_location)
-    # else
-    #   mytarget.speak("double click")
-    #   double_click(robot,target_location)
-    # end
-    return "double clicked"
+      return "single clicked"
    else
     puts "error: we didn't find the #{search_element} or click"
     exit
@@ -298,22 +306,20 @@ def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_
 end
 
 def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
-  mytarget=Findtarget.new
-  mytarget.speak("wait_unit_we_are_moving")
+  my_action=Action.new
+  my_action.speak("waiting on movement") if debug==1
   are_we_moving="no"
   are_we_stopped="yes"
   until are_we_moving == "yes" and are_we_stopped == "no"
     are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map)
     are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map)
-    mytarget.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
+    my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
   end
   
   return "yes" #results 
   
 end
-
-
 
 def is_log_entry_current(loginfo)
   debug=0
@@ -401,6 +407,7 @@ def log_reader()
    return "" #return an empty string to prevent an object pointer from getting returned and messsing up things
  end
 
+
 ###################################################
 #Future - todo - the color map should be put in a json file
 ###################################################
@@ -446,7 +453,7 @@ rgb_color_map={
 
 #test area for above class
 robot = Robot.new
-mytarget=Findtarget.new
+my_action=Action.new
 
 #load in json file
 my_json_file=("/var/tmp/locations.json")
@@ -485,93 +492,79 @@ cloaking_ship=0
 
 while in_space==1 
   if destination_selected == 0 # only need this once to set state
-    mytarget.speak("center") 
+    my_action.speak("center") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the destination indicator
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
     puts "We #{my_message} on our destination."
     destination_selected=1
     #stop ship 
-    mytarget.speak("stop ")
+    my_action.speak("stop ")
     sleep 2
   end
 
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("L1 grey #{are_we_stopped}") if debug==1
+  my_action.speak("L1 grey #{are_we_stopped}") if debug==1
 
   are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
-  mytarget.speak("L2 blue #{are_we_moving}") if debug==1
+  my_action.speak("L2 blue #{are_we_moving}") if debug==1
 
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-  mytarget.speak("L3 icon #{icon_is_visable}") if debug ==1
+  my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-  
-  if icon_is_visable == "yes"
-    icon_found_count=icon_found_count+1
-    puts "testing: we see the icon and saw it #{icon_found_count} times"
-  else
-    icon_notfound_count=icon_notfound_count+1
-    puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
+  if debug ==1 #debug icon search 
+    if icon_is_visable == "yes"
+      icon_found_count=icon_found_count+1
+      puts "testing: we see the icon and saw it #{icon_found_count} times"
+    else
+      icon_notfound_count=icon_notfound_count+1
+      puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
+    end
+    sleep 2
   end
-  sleep 2
 
-  if are_we_stopped=="yes" and in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
+  start_jump_count=start_jump_count
+  #hit jump button 
+  if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     if cloaking_ship == 1
       puts "We appear to be stopped... clicking align" 
       my_message=double_click(robot,target_location=align_to_top)
       ##################
-      #TODO
-      #need logic to turn on the cloaking device here
+      #***NEEDED*** logic to turn on the cloaking device here
       ##################
       puts "We #{my_message} on align_to_top."
-      ##################
-      #wait for speed 
-      ##################
       are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      mytarget.speak("align_to")
+      my_action.speak("align_to")
+      sleep 2
+      jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
+    else
+      jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
     end
-    
-    ####################
-    #Hit the jump button 
-    ####################
-    my_message=double_click(robot,target_location=jump_button_top)
-    mytarget.speak("jump")
-    puts "We #{my_message} on warp_to_top."
-    jump_count = jump_count + 1
-    puts "jump count is #{jump_count}. We are in warp..."
+  end
 
-    jump_seq_complete=0 
-    mytarget.speak("waiting for completion")
-
+  #wait for jump or docking completation 
+  if jump_count  > start_jump_count
+    my_action.speak("waiting for jump completion")
     jump_seq_complete=0
     #wait until log says jump is complete
     until jump_seq_complete==1
      sleep 1
      parsed_log=log_reader() #gives an array for some reason
      if parsed_log.to_s =~ /jumping/i 
-       puts parsed_log
-       mytarget.speak(parsed_log)
-       jump_seq_complete=1
+      puts parsed_log
+      my_action.speak(parsed_log)
+      jump_seq_complete=1
      end
      if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
-       mytarget.speak("docking finished")
-       exit 
+      my_action.speak("docking finished")
+      exit 
      end
     end
-
-    #gold_undock_is_visable = check_non_clickable(robot,"gold_undock",gold_undock,gold_undock,rgb_color_map)
-
-    #if gold_undock_is_visable=="yes"
-      #in_space=0
-      #exit 
-    #end
+    #verify icon refeshed and jump squence really finished
+    until icon_is_visable=="yes"
+     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+    end
+    my_action.speak("jump #{jump_count}")
+  end
   
-  #verify icon refeshed and jump squence really finished
-  until icon_is_visable=="yes"
-    icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
-  end
-  mytarget.speak("jump #{jump_count}")
-  else
-    sleep 1 
-  end
 end  
