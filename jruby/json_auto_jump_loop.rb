@@ -227,7 +227,7 @@ class Action
 
  def hit_the_jump_button(robot,target_location,jump_count)
   #Hit the press the jump button 
-  my_message=double_click(robot,target_location=jump_button_top)
+  my_message=double_click(robot,target_location)
   self.speak("jump")
   puts "We #{my_message} on warp_to_top."
   jump_count = jump_count + 1
@@ -487,7 +487,7 @@ are_we_stopped="yes"
 icon_found_count=0
 icon_notfound_count=0
 
-debug=1
+debug=0 #espeak gets chatty with debug =1 
 cloaking_ship=0
 
 while in_space==1 
@@ -498,9 +498,7 @@ while in_space==1
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
     puts "We #{my_message} on our destination."
     destination_selected=1
-    #stop ship 
-    my_action.speak("stop ")
-    sleep 2
+    my_action.speak("destination selected") if debug ==1
   end
 
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
@@ -523,7 +521,8 @@ while in_space==1
     sleep 2
   end
 
-  start_jump_count=start_jump_count
+  start_jump_count=jump_count
+  jump_button_pressed=0
   #hit jump button 
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     if cloaking_ship == 1
@@ -537,13 +536,22 @@ while in_space==1
       my_action.speak("align_to")
       sleep 2
       jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
+      jump_button_pressed=1
     else
       jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
+      jump_button_pressed=1
     end
   end
 
   #wait for jump or docking completation 
-  if jump_count  > start_jump_count
+  if jump_count  > start_jump_count and jump_button_pressed ==1
+
+    #wait until the blue bar is full speed.
+    until are_we_moving == "yes"
+       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+       sleep 5
+    end
+    
     my_action.speak("waiting for jump completion")
     jump_seq_complete=0
     #wait until log says jump is complete
