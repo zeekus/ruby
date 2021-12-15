@@ -178,7 +178,9 @@ class Action
           puts "possible match - The pixel could be #{rgb_color_map[hex_string]}"
           return found_icon_coord
         else 
-         puts "warning: The pixel color of #{hex_string} at [#{x},#{y}] is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}" if debug==1
+         if debug==1
+           puts "warning: The pixel color of #{hex_string} at [#{x},#{y}] is not mapped. best #{my_best_guess}"
+         end
         end #if loop
       end  #for y loop 
     end #for x loop
@@ -557,7 +559,7 @@ while in_space==1
     #wait until log says jump is complete
     until jump_seq_complete==1
      sleep 1
-     parsed_log=log_reader(debug=1) #gives an array for some reason
+     parsed_log=log_reader(debug) #gives an array for some reason
      if parsed_log.to_s =~ /jumping/i 
       puts parsed_log
       my_action.speak(parsed_log)
