@@ -146,7 +146,7 @@ class Action
     end #end of until loop
   end #end function move_mouse_to_target_like_human
 
-  def color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map) 
+  def color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
     mybreak =0
     found_icon_coord=[]
@@ -178,7 +178,7 @@ class Action
           puts "possible match - The pixel could be #{rgb_color_map[hex_string]}"
           return found_icon_coord
         else 
-         puts "warning: The pixel color of #{hex_string} at [#{x},#{y}] is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}"
+         puts "warning: The pixel color of #{hex_string} at [#{x},#{y}] is not mapped. Keep on looking. Best Guess is color is #{my_best_guess}" if debug==1
         end #if loop
       end  #for y loop 
     end #for x loop
@@ -271,14 +271,14 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
 
   #scan region of screen without moving the mouse
   my_action=Action.new
-  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
+  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
 
   if target_location != [0,0]
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
     if search_element=="grey_speed" ##workaround for grey - grey and white look very similar. 
-      target_location=my_action.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map)
+      target_location=my_action.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map,debug)
       if target_location != [0,0]
         return "yes" #this was white but in the grey search area
       else
@@ -290,11 +290,11 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
   end
 end
 
-def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map) 
+def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
   #move the pointer to the target location like a human before clicking 
   my_action=Action.new
   my_action.speak("scanning for clickable target")
-  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
+  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
 
    if target_location != [0,0] and target_location != nil 
       single_click(robot,target_location)
@@ -347,7 +347,7 @@ def is_log_entry_current(loginfo)
   end
 end
 
-def log_reader()
+def log_reader(debug)
   #####################
   #find latest log file
   #####################
@@ -358,13 +358,13 @@ def log_reader()
  
   myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
   if File.exists?(myfile)
-    puts "debug my last log is #{myfile}"
+    puts "debug my last log is #{myfile}" if debug==1
     file=File.open(myfile) #read file
     file_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
     file.close #closing file
     filesize=0  #get size of the file
     filesize=file_data.size
-    puts "'debug gamelog file has #{filesize}' lines"
+    puts "'debug gamelog file has #{filesize}' lines" if debug==1
     #only run if file size is greater than 5
     if filesize < 5
      puts "exiting. Listener is active but file is too small. Try exiting the station."
@@ -398,7 +398,7 @@ def log_reader()
           dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
           return dock_string #end of journey see this
         else 
-          jump_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+          jump_string = line.split("(.one) ")[1]#remove first part of line so just get the jumping info
           return jump_string
         end
       end
@@ -495,7 +495,7 @@ while in_space==1
     my_action.speak("center") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the destination indicator
-    my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map)
+    my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
     puts "We #{my_message} on our destination."
     destination_selected=1
     my_action.speak("destination selected") if debug ==1
@@ -557,7 +557,7 @@ while in_space==1
     #wait until log says jump is complete
     until jump_seq_complete==1
      sleep 1
-     parsed_log=log_reader() #gives an array for some reason
+     parsed_log=log_reader(debug=1) #gives an array for some reason
      if parsed_log.to_s =~ /jumping/i 
       puts parsed_log
       my_action.speak(parsed_log)
