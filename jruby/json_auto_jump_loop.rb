@@ -267,7 +267,7 @@ def double_click(robot,target_location)
    end
 end
 
-def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map)
+def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
 
   #scan region of screen without moving the mouse
   my_action=Action.new
@@ -398,7 +398,7 @@ def log_reader(debug)
           dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
           return dock_string #end of journey see this
         else 
-          jump_string = line.split("(.one) ")[1]#remove first part of line so just get the jumping info
+          jump_string = line.split("one) ")[1]#remove first part of line so just get the jumping info
           return jump_string
         end
       end
@@ -501,13 +501,13 @@ while in_space==1
     my_action.speak("destination selected") if debug ==1
   end
 
-  are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
   my_action.speak("L1 grey #{are_we_stopped}") if debug==1
 
-  are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+  are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
   my_action.speak("L2 blue #{are_we_moving}") if debug==1
 
-  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
   if debug ==1 #debug icon search 
@@ -548,7 +548,7 @@ while in_space==1
 
     #wait until the blue bar is full speed.
     until are_we_moving == "yes"
-       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map)
+       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        sleep 5
     end
     
@@ -570,7 +570,7 @@ while in_space==1
     end
     #verify icon refeshed and jump squence really finished
     until icon_is_visable=="yes"
-     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map)
+     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
     end
     my_action.speak("jump #{jump_count}")
   end
