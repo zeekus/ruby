@@ -2,6 +2,8 @@
 #filename: json_auto_jump_loop.rb
 #description: moves ship from system to system until docking.
 #requires a location.json file to exist. 
+#use: json_setup_screen_points.rb to setup json file holding buttons
+#use  json_test_setup.rb to verify the button locations are where they are.
 
 require 'java'
 require 'json'
@@ -22,7 +24,7 @@ class Action
 
   def speak(message)
     if File.exist?("/usr/bin/espeak")  
-     wait_delay=2 # 2 seconds 
+     wait_delay=1
      system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
      puts "#{message}"
      sleep wait_delay
@@ -520,7 +522,7 @@ while in_space==1
       icon_notfound_count=icon_notfound_count+1
       puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
     end
-    sleep 2
+    sleep 1
   end
 
   start_jump_count=jump_count
@@ -536,7 +538,7 @@ while in_space==1
       puts "We #{my_message} on align_to_top."
       are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("align_to")
-      sleep 2
+      sleep 1
       jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
       jump_button_pressed=1
     else
@@ -548,17 +550,32 @@ while in_space==1
   #wait for jump or docking completation 
   if jump_count  > start_jump_count and jump_button_pressed ==1
 
-    #wait until the blue bar is full speed.
+    #######################################################
+    #Ship should be speeding up. Wait until the blue bar is full speed.
+    #######################################################
+    wait_count =0
     until are_we_moving == "yes"
+       print "...waiting for ship to reach full speed."
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-       sleep 5
+       wait_count = wait_count +1
+       sleep 2
+       if wait_count > 10
+        puts "warning acceleration is taking too long. rescanning and clickign on yellow"
+        my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
+        my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
+        wait_count=0 #reset wait count
+       end
     end
     
     my_action.speak("waiting for jump completion")
     jump_seq_complete=0
-    #wait until log says jump is complete
+    #######################################################
+    #Upon jump to a new systems we should get a log entry. *Note* this ocassionally fails. 
+    #######################################################
+    wait_count =0
     until jump_seq_complete==1
      sleep 1
+     wait_count = wait_count +1
      parsed_log=log_reader(debug) #gives an array for some reason
      if parsed_log.to_s =~ /jumping/i 
       puts parsed_log
@@ -569,12 +586,28 @@ while in_space==1
       my_action.speak("docking finished")
       exit 
      end
+     if wait_count > 45 #failsafe for when logs are not working right
+        puts "warning slow. This is taking too long. We should see something in the logs by now."
+        break #leave loop and got to next sequence
+     end
     end
-    #verify icon refeshed and jump squence really finished
+    ########################################################
+    #End of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
+    ########################################################
+    wait_count =0
     until icon_is_visable=="yes"
+     print "waiting after jump for icon"
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+     if wait_count > 10 #ocassionally we can lose track of the gate when traveling
+       puts" lost white icon: we should click on the yellow icon again."
+       #check and click on the destination indicator
+       my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
+       wait_count=0 #reset wait count
+     end
+     sleep 1
+     wait_count = wait_count +1
     end
-    my_action.speak("jump #{jump_count}")
+    my_action.speak("#{jump_count} jump complete")
   end
   
 end  
