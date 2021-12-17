@@ -483,13 +483,16 @@ yellow_icon_left_top=data_hash["yellow_icon_left_top"]
 yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 gold_undock=data_hash["gold_undock"]
 
-destination_selected=0
-in_space=1
-jump_count = 0 
-are_we_moving="no"
-are_we_stopped="yes"
-icon_found_count=0
-icon_notfound_count=0
+#default settings
+####################
+destination_selected=0  #status of yellow selection
+in_space=1              #status of ship - always 1
+jump_count = 0          #counter for jumps   
+are_we_moving="no"      #status of ship
+are_we_stopped="yes"    #status of ship 
+icon_found_count=0      #counter for stats
+icon_notfound_count=0   #counter for icon misses
+parsed_log=""           #last system we jumped to
 
 debug=0 #espeak gets chatty with debug =1 
 cloaking_ship=0
@@ -546,8 +549,9 @@ while in_space==1
       jump_button_pressed=1
     end
   end
-
-  #wait for jump or docking completation 
+  ##########
+  #wait for jump or docking completion
+  ##########3 
   if jump_count  > start_jump_count and jump_button_pressed ==1
 
     #######################################################
