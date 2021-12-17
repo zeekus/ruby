@@ -344,7 +344,8 @@ def is_log_entry_current(loginfo)
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 25 #25 second theshold
+  if diff < 5 #5 second theshold
+    sleep 5 #wait for 5 seconds so we don't pick up the log again
     return 1 
   else
     return 0
@@ -530,7 +531,9 @@ while in_space==1
 
   start_jump_count=jump_count
   jump_button_pressed=0
+  ###################
   #hit jump button 
+  ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     if cloaking_ship == 1
       puts "We appear to be stopped... clicking align" 
@@ -601,6 +604,8 @@ while in_space==1
     wait_count =0
     until icon_is_visable=="yes"
      print "waiting after jump for icon"
+     sleep 1
+     wait_count = wait_count +1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      if wait_count > 10 #ocassionally we can lose track of the gate when traveling
        puts" lost white icon: we should click on the yellow icon again."
@@ -608,8 +613,7 @@ while in_space==1
        my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
        wait_count=0 #reset wait count
      end
-     sleep 1
-     wait_count = wait_count +1
+
     end
     my_action.speak("#{jump_count} jump complete")
   end
