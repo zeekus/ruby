@@ -493,9 +493,7 @@ are_we_moving="no"      #status of ship
 are_we_stopped="yes"    #status of ship 
 icon_found_count=0      #counter for stats
 icon_notfound_count=0   #counter for icon misses
-parsed_log=""           #last system we jumped to
-
-debug=0 #espeak gets chatty with debug =1 
+debug=0                 #espeak gets chatty with debug =1 
 cloaking_ship=0
 
 while in_space==1 
@@ -564,7 +562,7 @@ while in_space==1
     until are_we_moving == "yes"
        print "...waiting for ship to reach full speed."
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-       wait_count = wait_count +1
+       wait_count=wait_count+1
        sleep 2
        if wait_count > 10
         puts "warning acceleration is taking too long. rescanning and clickign on yellow"
@@ -582,7 +580,7 @@ while in_space==1
     wait_count =0
     until jump_seq_complete==1
      sleep 1
-     wait_count = wait_count +1
+     wait_count=wait_count+1
      parsed_log=log_reader(debug) #gives an array for some reason
      if parsed_log.to_s =~ /jumping/i 
       puts parsed_log
@@ -605,7 +603,7 @@ while in_space==1
     until icon_is_visable=="yes"
      print "waiting after jump for icon"
      sleep 1
-     wait_count = wait_count +1
+     wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      if wait_count > 10 #ocassionally we can lose track of the gate when traveling
        puts" lost white icon: we should click on the yellow icon again."
