@@ -21,7 +21,8 @@ def is_log_entry_current(loginfo)
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 25 #25 second theshold
+  if diff < 5 #25 second theshold
+    sleep 5
     return 1 
   else
     return 0
@@ -56,14 +57,10 @@ def log_reader()
     exit
   end
 
- 
-  
  #  puts "is file_data an array ?"
  #  p file_data.instance_of? Array
  
   last_3=file_data[-3..-1]  #get last 3 lines of the file_data
- #  puts "is last_3 an array ?"
- #  p last_3.instance_of? Array
 
   #initialize variables
   dock_string=""
@@ -87,8 +84,6 @@ def log_reader()
    end
    return "" #return an empty string to prevent an object pointer from getting returned and messsing up things
  end
-
-
   
   #start of prototype loop
   jump_complete=0
