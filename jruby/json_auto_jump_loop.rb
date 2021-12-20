@@ -493,7 +493,7 @@ are_we_moving="no"      #status of ship
 are_we_stopped="yes"    #status of ship 
 icon_found_count=0      #counter for stats
 icon_notfound_count=0   #counter for icon misses
-debug=0                 #espeak gets chatty with debug =1 
+debug=1                #espeak gets chatty with debug =1 
 cloaking_ship=0
 
 while in_space==1 
@@ -506,8 +506,9 @@ while in_space==1
   #SEQ 0: prerequisite - select the yellow destination icon
   #issues this disappears sometimes at random intervals. 
   ###########################################
-  if destination_selected == 0 and icon_is_visable =="no" # only need this once to set state
-    my_action.speak("center") 
+  if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
+    sleep 5
+    my_action.speak("single click") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
@@ -518,11 +519,11 @@ while in_space==1
 
   #check for grey
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-  my_action.speak("L1 grey #{are_we_stopped}") if debug==1
+  my_action.speak("L1 grey stopped #{are_we_stopped}") if debug==1
 
   #check for blue 
   are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-  my_action.speak("L2 blue #{are_we_moving}") if debug==1
+  my_action.speak("L2 blue moving #{are_we_moving}") if debug==1
 
   #check for icon
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
@@ -545,6 +546,7 @@ while in_space==1
   #SEQ: 1. hit jump button
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
+    my_action.speak("1. jump sequence #{jump_count}") if debug ==1
     if cloaking_ship == 1
       puts "We appear to be stopped... clicking align" 
       my_message=double_click(robot,target_location=align_to_top)
@@ -566,7 +568,8 @@ while in_space==1
   #################
   #SEQ 2: ship should be speeding up blue bar filling
   #################
-  if jump_count  > start_jump_count and jump_button_pressed ==1
+  if jump_button_pressed ==1
+    my_action.speak("2. looking for movement sequence #{jump_count}") if debug ==1
 
     #######################################################
     #Ship should be speeding up. Wait until the blue bar is full speed.
@@ -579,12 +582,16 @@ while in_space==1
        sleep 2
        if wait_count > 10
         puts "warning acceleration is taking too long. rescanning and clickign on yellow"
+        my_action.speak("overwait wait count #{wait_count}") if debug ==1
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
         my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
         wait_count=0 #reset wait count
        end
     end
     
+    ###################
+    #SEQ 3. waiting for jump completion
+    ###################
     my_action.speak("waiting for jump completion")
     jump_seq_complete=0
     #######################################################
@@ -593,6 +600,7 @@ while in_space==1
     #######################################################
     wait_count =0
     until jump_seq_complete==1
+      my_action.speak("3. jump sequence") if debug ==1
       sleep 1
       wait_count=wait_count+1
       #FAIL SAFE #1 check for grey - grey indicates ship slowing for a jump
@@ -620,17 +628,22 @@ while in_space==1
       end
     end
     ########################################################
-    #End of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
+    #SEQ 4: Verifyting end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
     ########################################################
     wait_count =0
-    until icon_is_visable=="yes"
+    jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
+    icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+    until icon_is_visable=="yes" and jump_button_visable=="yes"
+     my_action.speak("4.end of jump sequence") if debug ==1
      print "waiting after jump for icon"
-     sleep 1
+     sleep 2
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
      if wait_count > 10 #ocassionally we can lose track of the gate when traveling
        puts" lost white icon: we should click on the yellow icon again."
        #check and click on the destination indicator
+       my_action.speak("warning lost gate") if debug ==1
        my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
        wait_count=0 #reset wait count
      end
