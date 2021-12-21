@@ -2,6 +2,7 @@
 #filename: json_auto_jump_loop.rb
 #description: moves ship from system to system until docking.
 #requires a location.json file to exist. 
+#requires stations and gates on overview
 #use: json_setup_screen_points.rb to setup json file holding buttons
 #use  json_test_setup.rb to verify the button locations are where they are.
 
@@ -320,7 +321,8 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
     my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
   end
-  
+
+  my_action.speak("movement detected")
   return "yes" #results 
   
 end
@@ -344,8 +346,8 @@ def is_log_entry_current(loginfo)
   puts "debug - current_secs #{current_secs}" if debug==1
   diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
   puts "debug: diff is #{diff}" if debug==1
-  if diff < 5 #5 second theshold
-    sleep 5 #wait for 5 seconds so we don't pick up the log again
+  if diff < 10 #10 second theshold
+    #buggy ? 
     return 1 
   else
     return 0
@@ -382,16 +384,26 @@ def log_reader(debug=1)
 
  #  puts "is file_data an array ?"
  #  p file_data.instance_of? Array
- 
-  last_3=file_data[-3..-1]  #get last 3 lines of the file_data
- #  puts "is last_3 an array ?"
- #  p last_3.instance_of? Array
+ last_log_entries=[] #empty array
+ ####################
+ #adapt based on log size. When a lot of system activity is happening, logs may be longer.
+ #################### 
+ if filesize < 6
+  last_log_entries=file_data[-3..-1]  #get last 3 lines of the file_data
+ elsif filesize < 11
+  last_log_entries=file_data[-8..-1]  #get last 8 lines of the file_data
+ else 
+  last_log_entries=file_data[-10..-1]  #get last 10 lines of the file_data
+ end
+
+ #  puts "is last_log_entries an array ?"
+ #  p last_log_entries.instance_of? Array
 
   #initialize variables
   dock_string=""
   jump_string="" 
  
-  last_3.each do |line|  #look at it
+  last_log_entries.each do |line|  #look at it
     if /^\[/.match(line) #sometimes the lines don't have the time ignore them
       result=is_log_entry_current(line.chomp) #current log entry only
       if result ==1
@@ -401,7 +413,7 @@ def log_reader(debug=1)
           dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
           return dock_string #end of journey see this
         else 
-          jump_string = line.split("one) ")[1]#remove first part of line so just get the jumping info
+          jump_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
           puts "log_reader returning '#{jump_string}'" if debug==1
           return jump_string
         end
@@ -467,7 +479,7 @@ if File.exist?(my_json_file)
   data_hash = JSON.load(file) #load in json file holding locations
 end
 
-#variables come from json
+#Screen Location: variables come from json
 ref_point=data_hash["screen_center"]
 align_to_top=data_hash["align_to_top"]
 align_to_bottom=data_hash["align_to_bottom"]
@@ -489,17 +501,17 @@ destination_selected=0  #status of yellow selection
 in_space=1              #status of ship - always 1
 jump_count = 0          #counter for jumps   
 icon_is_visable="no"    #status of icon on right of screen
-are_we_moving="no"      #status of ship
-are_we_stopped="yes"    #status of ship 
+are_we_moving="no"      #status of ship blue check
+are_we_stopped="yes"    #status of ship grey check 
 icon_found_count=0      #counter for stats
 icon_notfound_count=0   #counter for icon misses
-debug=1                #espeak gets chatty with debug =1 
+debug=0                #espeak gets chatty with debug =1 
 cloaking_ship=0
 
 while in_space==1 
 
   #check for icon - needed to find the yellow icon
-  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+  icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug) 
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
   ###########################################
@@ -507,17 +519,17 @@ while in_space==1
   #issues this disappears sometimes at random intervals. 
   ###########################################
   if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
-    sleep 5
-    my_action.speak("single click") 
+    sleep 1
+    my_action.speak("go 0 - 1 single click") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
     puts "We #{my_message} on our destination."
     destination_selected=1
-    my_action.speak("destination selected") if debug ==1
+    my_action.speak("go 0 destination selected") if debug ==1
   end
 
-  #check for grey
+  #check for grey - ocassionally this is white
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
   my_action.speak("L1 grey stopped #{are_we_stopped}") if debug==1
 
@@ -546,7 +558,7 @@ while in_space==1
   #SEQ: 1. hit jump button
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
-    my_action.speak("1. jump sequence #{jump_count}") if debug ==1
+    my_action.speak("go 1 jump button") #if debug ==1
     if cloaking_ship == 1
       puts "We appear to be stopped... clicking align" 
       my_message=double_click(robot,target_location=align_to_top)
@@ -569,30 +581,33 @@ while in_space==1
   #SEQ 2: ship should be speeding up blue bar filling
   #################
   if jump_button_pressed ==1
-    my_action.speak("2. looking for movement sequence #{jump_count}") if debug ==1
+    my_action.speak("go 2 accelerate") if debug ==1
 
     #######################################################
     #Ship should be speeding up. Wait until the blue bar is full speed.
     #######################################################
     wait_count =0
-    until are_we_moving == "yes"
+    until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed."
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+       #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
-       sleep 2
+       sleep 1
        if wait_count > 10
-        puts "warning acceleration is taking too long. rescanning and clickign on yellow"
-        my_action.speak("overwait wait count #{wait_count}") if debug ==1
+        my_action.speak("acceleration overwait warning") 
+        puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
         my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
         wait_count=0 #reset wait count
+       else 
+        my_action.speak("#{wait_count}") #counter 
        end
     end
     
     ###################
     #SEQ 3. waiting for jump completion
     ###################
-    my_action.speak("waiting for jump completion")
+    my_action.speak("go 3 jumping wait")
     jump_seq_complete=0
     #######################################################
     #problem area - logs are not always working/reliable. 
@@ -600,24 +615,24 @@ while in_space==1
     #######################################################
     wait_count =0
     until jump_seq_complete==1
-      my_action.speak("3. jump sequence") if debug ==1
+      my_action.speak("waiting  for jump completion") if debug ==1
       sleep 1
       wait_count=wait_count+1
-      #FAIL SAFE #1 check for grey - grey indicates ship slowing for a jump
-      are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      my_action.speak("L1 grey #{are_we_stopped}") if debug==1
+      # #FAIL SAFE #1 check for grey - grey indicates ship slowing for a jump
+      # are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+      # my_action.speak("L1 grey stopped #{are_we_stopped}") if debug==1
 
-      #Fail SAFE #2 check for icon
+      #Fail SAFE check for icon
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
       
       parsed_log=log_reader(debug) #gives an array for some reason
-      if parsed_log.to_s =~ /jumping/i or ( are_we_stopped =="yes" and icon_is_visable=="no")
+      if parsed_log.to_s =~ /jumping/i or  icon_is_visable=="no"
         puts "*debug log_reader returned* string '#{parsed_log}'"
         if parsed_log !="" #default returns nothing
           my_action.speak(parsed_log)
         else 
-          my_action.speak("failsafe jump")
+          my_action.speak("failsafe jump wait 5")
           sleep 5
         end
         jump_seq_complete=1
@@ -628,28 +643,28 @@ while in_space==1
       end
     end
     ########################################################
-    #SEQ 4: Verifyting end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
+    #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
     ########################################################
-    wait_count =0
+    wait_count =0 
+    single_click(robot,ref_point) #move mouse to see the buttons 
     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
     until icon_is_visable=="yes" and jump_button_visable=="yes"
-     my_action.speak("4.end of jump sequence") if debug ==1
-     print "waiting after jump for icon"
-     sleep 2
+     my_action.speak("go 4 refresh") #if debug ==1
+     print "waiting for refresh"
+     sleep 1
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
-     if wait_count > 10 #ocassionally we can lose track of the gate when traveling
+     if wait_count > 3 #ocassionally we can lose track of the gate when traveling
        puts" lost white icon: we should click on the yellow icon again."
        #check and click on the destination indicator
-       my_action.speak("warning lost gate") if debug ==1
+       my_action.speak("warning lost gate") #if debug ==1
        my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
        wait_count=0 #reset wait count
      end
-
     end
-    my_action.speak("#{jump_count} jump complete")
+    my_action.speak("jump #{jump_count} complete")
   end
   
 end  
