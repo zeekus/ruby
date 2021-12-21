@@ -28,7 +28,7 @@ class Action
      wait_delay=1
      system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
      puts "#{message}"
-     sleep wait_delay
+     #sleep wait_delay
     else
       puts "warning missing espeak..."
       puts "#{message}"
@@ -282,7 +282,7 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
-    if search_element=="grey_speed" ##workaround for grey - grey and white look very similar. 
+    if search_element=="grey_speed" or "white_icon" #workaround grey and white look very similar assume same 
       target_location=my_action.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map,debug)
       if target_location != [0,0]
         return "yes" #this was white but in the grey search area
@@ -519,8 +519,8 @@ while in_space==1
   #issues this disappears sometimes at random intervals. 
   ###########################################
   if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
-    sleep 1
-    my_action.speak("go 0 - 1 single click") 
+    robot.delay(100)
+    my_action.speak("go 0 single click") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
@@ -549,7 +549,7 @@ while in_space==1
       icon_notfound_count=icon_notfound_count+1
       puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
     end
-    sleep 1
+    robot.delay(100)
   end
 
   start_jump_count=jump_count
@@ -558,7 +558,7 @@ while in_space==1
   #SEQ: 1. hit jump button
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
-    my_action.speak("go 1 jump button") #if debug ==1
+    my_action.speak("go 1 jump") #if debug ==1
     if cloaking_ship == 1
       puts "We appear to be stopped... clicking align" 
       my_message=double_click(robot,target_location=align_to_top)
@@ -568,7 +568,7 @@ while in_space==1
       puts "We #{my_message} on align_to_top."
       are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("align_to")
-      sleep 1
+      robot.delay(100)
       jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
       jump_button_pressed=1
     else
@@ -592,8 +592,8 @@ while in_space==1
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
-       sleep 1
-       if wait_count > 10
+       robot.delay(500)
+       if wait_count > 20
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
@@ -607,7 +607,7 @@ while in_space==1
     ###################
     #SEQ 3. waiting for jump completion
     ###################
-    my_action.speak("go 3 jumping wait")
+    my_action.speak("go 3 waitng for jump completation")
     jump_seq_complete=0
     #######################################################
     #problem area - logs are not always working/reliable. 
@@ -615,12 +615,8 @@ while in_space==1
     #######################################################
     wait_count =0
     until jump_seq_complete==1
-      my_action.speak("waiting  for jump completion") if debug ==1
-      sleep 1
+      robot.delay(500)
       wait_count=wait_count+1
-      # #FAIL SAFE #1 check for grey - grey indicates ship slowing for a jump
-      # are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      # my_action.speak("L1 grey stopped #{are_we_stopped}") if debug==1
 
       #Fail SAFE check for icon
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
@@ -633,7 +629,7 @@ while in_space==1
           my_action.speak(parsed_log)
         else 
           my_action.speak("failsafe jump wait 5")
-          sleep 5
+          robot.delay(5000)
         end
         jump_seq_complete=1
       end
@@ -650,16 +646,16 @@ while in_space==1
     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
     until icon_is_visable=="yes" and jump_button_visable=="yes"
-     my_action.speak("go 4 refresh") #if debug ==1
+     my_action.speak("go 4 refresh") 
      print "waiting for refresh"
-     sleep 1
+     robot.delay(500)
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
-     if wait_count > 3 #ocassionally we can lose track of the gate when traveling
-       puts" lost white icon: we should click on the yellow icon again."
+     if wait_count > 6 #ocassionally we can lose track of the gate when traveling
+       puts" lost white icon or jump_button: we should click on the yellow icon again."
        #check and click on the destination indicator
-       my_action.speak("warning lost gate") #if debug ==1
+       my_action.speak("go 4 lost gate. jump_button visible #{jump_button_visable} icon visible #{icon_is_visable}") 
        my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
        wait_count=0 #reset wait count
      end
