@@ -25,10 +25,8 @@ class Action
 
   def speak(message)
     if File.exist?("/usr/bin/espeak")  
-     wait_delay=1
      system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
      puts "#{message}"
-     #sleep wait_delay
     else
       puts "warning missing espeak..."
       puts "#{message}"
@@ -141,11 +139,11 @@ class Action
       else
 	     my_tmp_location=self.get_current_mouse_location(robot)
 	     self.mydebugger("move_mouse_to_target_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
-       robot.delay(10)
-       return(1)
+       robot.delay(1) 
+       return(1) 
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(1)
+      robot.delay(1) 
     end #end of until loop
   end #end function move_mouse_to_target_like_human
 
@@ -228,33 +226,37 @@ class Action
     )
     #my_color = "#{my_color}:#{hue}"
    return my_color
- end
+  end
 
- def hit_the_jump_button(robot,target_location,jump_count)
-  #Hit the press the jump button 
-  my_message=double_click(robot,target_location)
-  self.speak("jump")
-  puts "We #{my_message} on warp_to_top."
-  jump_count = jump_count + 1
-  puts "jump count is #{jump_count}. We are in warp..."
-  return jump_count
-end
+  def hit_the_jump_button(robot,target_location,jump_count)
+    #Hit the press the jump button 
+    my_message=double_click(robot,target_location)
+    self.speak("jump")
+    puts "We #{my_message} on warp_to_top."
+    jump_count = jump_count + 1
+    puts "jump count is #{jump_count}. We are in warp..."
+    return jump_count
+  end
 
 end #end class
 
+# def press1(robot)
+#   robot.keyPress(KeyEvent::VK_1)
+#   robot.delay(40)
+#   robot.keyRelease(KeyEvent::VK_1)
+# end
+
+
 
 def single_click(robot,target_location)
-
    #move the pointer to the target location like a human before clicking 
    #target_location=[x,y]
    target=Action.new
    target.move_mouse_to_target_like_human(robot,target_location)
   
    #left click
-   #logwrite("event: single click at #{x},#{y}")
    robot.mousePress(InputEvent::BUTTON1_MASK)
-   robot.delay(155)
-   #logwrite("event: single unclick at #{x},#{y}")
+   robot.delay(70)
    robot.mouseRelease(InputEvent::BUTTON1_MASK)
 end
 
@@ -265,9 +267,9 @@ def double_click(robot,target_location)
   target.move_mouse_to_target_like_human(robot,target_location)
   
    for i in (1..2)
-    robot.delay(150)
+    robot.delay(70)
     robot.mousePress(InputEvent::BUTTON1_MASK)
-    robot.delay(150)
+    robot.delay(70)
     robot.mouseRelease(InputEvent::BUTTON1_MASK)
    end
 end
@@ -282,7 +284,7 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
     return "yes"
   else
     puts "warn: we didn't find the #{search_element} at #{target_location}"
-    if search_element=="grey_speed" or "white_icon" #workaround grey and white look very similar assume same 
+    if search_element=="grey_speed" #workaround grey and white look very similar assume same 
       target_location=my_action.color_pixel_scan_in_range(robot,"white_icon",left_top_xy,right_bottom_xy,rgb_color_map,debug)
       if target_location != [0,0]
         return "yes" #this was white but in the grey search area
@@ -519,7 +521,7 @@ while in_space==1
   #issues this disappears sometimes at random intervals. 
   ###########################################
   if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
-    robot.delay(100)
+    robot.delay(500)  #1/2 second delay
     my_action.speak("go 0 single click") 
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the yellow destination marker
@@ -549,7 +551,7 @@ while in_space==1
       icon_notfound_count=icon_notfound_count+1
       puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
     end
-    robot.delay(100)
+    robot.delay(500)  #1/2 second delay
   end
 
   start_jump_count=jump_count
@@ -568,7 +570,7 @@ while in_space==1
       puts "We #{my_message} on align_to_top."
       are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("align_to")
-      robot.delay(100)
+      robot.delay(500)  #1/2 second delay
       jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
       jump_button_pressed=1
     else
@@ -581,7 +583,7 @@ while in_space==1
   #SEQ 2: ship should be speeding up blue bar filling
   #################
   if jump_button_pressed ==1
-    my_action.speak("go 2 accelerate") if debug ==1
+    my_action.speak("go 2 advance") if debug ==1
 
     #######################################################
     #Ship should be speeding up. Wait until the blue bar is full speed.
@@ -592,8 +594,8 @@ while in_space==1
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
-       robot.delay(500)
-       if wait_count > 20
+       robot.delay(500)  #1/2 second delay
+       if wait_count > 10 
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
@@ -615,7 +617,7 @@ while in_space==1
     #######################################################
     wait_count =0
     until jump_seq_complete==1
-      robot.delay(500)
+      robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
 
       #Fail SAFE check for icon
@@ -629,7 +631,7 @@ while in_space==1
           my_action.speak(parsed_log)
         else 
           my_action.speak("failsafe jump wait 5")
-          robot.delay(5000)
+          robot.delay(5000) #5 second delay
         end
         jump_seq_complete=1
       end
@@ -648,7 +650,7 @@ while in_space==1
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") 
      print "waiting for refresh"
-     robot.delay(500)
+     robot.delay(500)  #1/2 second delay
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
