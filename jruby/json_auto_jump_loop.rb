@@ -240,13 +240,12 @@ class Action
 
 end #end class
 
-# def press1(robot)
-#   robot.keyPress(KeyEvent::VK_1)
-#   robot.delay(40)
-#   robot.keyRelease(KeyEvent::VK_1)
-# end
-
-
+def cloak_on(robot)
+   #requires cloak to be mapped to module 1 and 1 set as the shorcut
+   robot.keyPress(KeyEvent::VK_1)
+   robot.delay(40)
+   robot.keyRelease(KeyEvent::VK_1)
+end
 
 def single_click(robot,target_location)
    #move the pointer to the target location like a human before clicking 
