@@ -240,10 +240,12 @@ class Action
 
 end #end class
 
-def cloak_on(robot)
-   #requires cloak to be mapped to module 1 and 1 set as the shorcut
+def press1(robot)
+   #cloak module
+   my_action=Action.new
+   my_action.speak("cloaking")
    robot.keyPress(KeyEvent::VK_1)
-   robot.delay(40)
+   robot.delay(50)
    robot.keyRelease(KeyEvent::VK_1)
 end
 
@@ -507,7 +509,7 @@ are_we_stopped="yes"    #status of ship grey check
 icon_found_count=0      #counter for stats
 icon_notfound_count=0   #counter for icon misses
 debug=0                #espeak gets chatty with debug =1 
-cloaking_ship=0
+cloaking_ship=1
 
 while in_space==1 
 
@@ -542,16 +544,16 @@ while in_space==1
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-  if debug ==1 #debug icon search 
-    if icon_is_visable == "yes"
-      icon_found_count=icon_found_count+1
-      puts "testing: we see the icon and saw it #{icon_found_count} times"
-    else
-      icon_notfound_count=icon_notfound_count+1
-      puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
-    end
-    robot.delay(500)  #1/2 second delay
-  end
+  # if debug ==1 #debug icon search 
+  #   if icon_is_visable == "yes"
+  #     icon_found_count=icon_found_count+1
+  #     puts "testing: we see the icon and saw it #{icon_found_count} times"
+  #   else
+  #     icon_notfound_count=icon_notfound_count+1
+  #     puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
+  #   end
+  #   robot.delay(500)  #1/2 second delay
+  # end
 
   start_jump_count=jump_count
   jump_button_pressed=0
@@ -559,23 +561,12 @@ while in_space==1
   #SEQ: 1. hit jump button
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
+    robot.delay(1000)  #1 second delay
     my_action.speak("go 1 jump") #if debug ==1
-    if cloaking_ship == 1
-      puts "We appear to be stopped... clicking align" 
-      my_message=double_click(robot,target_location=align_to_top)
-      ##################
-      #***NEEDED*** logic to turn on the cloaking device here
-      ##################
-      puts "We #{my_message} on align_to_top."
-      are_we_moving=wait_until_we_are_moving(robot,blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      my_action.speak("align_to")
-      robot.delay(500)  #1/2 second delay
-      jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
-      jump_button_pressed=1
-    else
-      jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
-      jump_button_pressed=1
-    end
+    jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
+    jump_button_pressed=1
+    robot.delay(500) #1/2 second delay
+    press1(robot) if cloaking_ship ==1
   end
 
   #################
@@ -588,6 +579,7 @@ while in_space==1
     #Ship should be speeding up. Wait until the blue bar is full speed.
     #######################################################
     wait_count =0
+    
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed."
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
@@ -608,7 +600,7 @@ while in_space==1
     ###################
     #SEQ 3. waiting for jump completion
     ###################
-    my_action.speak("go 3 waitng for jump completation")
+    my_action.speak("go 3 waiting for jump")
     jump_seq_complete=0
     #######################################################
     #problem area - logs are not always working/reliable. 
@@ -633,6 +625,7 @@ while in_space==1
           robot.delay(5000) #5 second delay
         end
         jump_seq_complete=1
+        robot.delay(3000) #give 3 second delay after jump complete detected. #attempt to fix timing issues.
       end
       if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
         my_action.speak("docking finished")
@@ -648,7 +641,7 @@ while in_space==1
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") 
-     print "waiting for refresh"
+     print "checking refresh"
      robot.delay(500)  #1/2 second delay
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
