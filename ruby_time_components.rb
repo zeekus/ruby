@@ -24,7 +24,7 @@ puts "Current Time : #{time}"
 puts "year       :#{time.year}"    # => Year of the date 
 puts "month      :#{time.month}"   # => Month of the date (1 to 12)
 puts "day        :#{time.day}"     # => Day of the date (1 to 31 )
-puts "wday       :#{time.wday}}"    # => 0: Day of week: 0 is Sunday
+puts "wday       :#{time.wday}"    # => 0: Day of week: 0 is Sunday
 puts "yday       :#{time.yday}"    # => 365: Day of year
 puts "hour       :#{time.hour}"    # => 23: 24-hour clock
 puts "min        :#{time.min}"     # => 59
