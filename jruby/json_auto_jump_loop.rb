@@ -240,10 +240,12 @@ class Action
 
 end #end class
 
-def press1(robot)
+def press1(robot,ref_point)
    #cloak module
    my_action=Action.new
    my_action.speak("cloaking")
+   single_click(robot,ref_point) #move mouse to see the buttons 
+   robot.delay(100)
    robot.keyPress(KeyEvent::VK_1)
    robot.delay(50)
    robot.keyRelease(KeyEvent::VK_1)
@@ -566,7 +568,7 @@ while in_space==1
     jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
     jump_button_pressed=1
     robot.delay(500) #1/2 second delay
-    press1(robot) if cloaking_ship ==1
+    press1(robot,ref_point) if cloaking_ship ==1
   end
 
   #################

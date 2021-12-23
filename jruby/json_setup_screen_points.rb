@@ -10,10 +10,14 @@ java_import 'java.awt.MouseInfo'        #get location of mouse
 java_import 'java.awt.Color'            #get color of pixel at location on screen
 java_import 'java.awt.event.KeyEvent'   #presing keys
 
-def speak(message)
-  wait_delay=2 # 2 seconds 
-  system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
-  sleep wait_delay
+def speak(robot,message,counter)
+  if counter == 1
+    system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
+    robot.delay(2000) #2 second delay
+  else 
+    system("echo #{message} | espeak > /dev/null 2> /dev/null") #supress messages
+    robot.delay(1000) #1 second delay
+  end
 end
 
 def get_color_of_pixel(robot,x,y)
@@ -40,15 +44,20 @@ def get_mouse_loc(robot)
   return x,y
 end
 
-def countdown()
-  speak("1")
-  speak("hold")
+def countdown(robot,counter)
+  if counter > 1
+     speak(robot,"hold",counter)
+     robot.delay(500)
+  else
+    speak(robot,"1",counter)
+    speak(robot,"hold",counter)
+  end
 end
 
-def request_data(robot,label,build_list)
+def request_data(robot,label,build_list,counter)
   puts "getting location for #{label}"
-  speak(label)
-  countdown
+  speak(robot,label,counter)
+  countdown(robot,counter)
   x,y=get_mouse_loc(robot)
   if label =~ /yellow/ or label =~ /center/ 
     #a.push([ "label1",[1,2] ] ) #working format
@@ -69,7 +78,8 @@ end
 robot = Robot.new
 my_menu_item_points=[]
 
-speak("defining setup")
+counter=0
+speak(robot,"defining setup",counter)
 
 map_of_stored_data={
   "screen_center"             => "move the mouse to the center of the screen", 
@@ -82,9 +92,11 @@ map_of_stored_data={
   "blue_speed"                => "move to the jump button",
 }
 
+
 #loop through the map_of_questions and build data array
 for key,values in map_of_stored_data
-  my_menu_item_points=request_data(robot,label=key,build_list=my_menu_item_points)
+  counter=counter+1
+  my_menu_item_points=request_data(robot,label=key,build_list=my_menu_item_points,counter)
   puts "size of my_menu_item_points is " + my_menu_item_points.length.to_s
 end
 
@@ -102,4 +114,5 @@ end
 
 #legacy: create a standard file
 write_file_for_configuration("/var/tmp/locations.txt",my_menu_item_points)
-speak("finished thanks")
+
+speak(robot,"finished thanks",counter)
