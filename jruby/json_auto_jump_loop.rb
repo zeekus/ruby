@@ -242,13 +242,16 @@ end #end class
 
 def press1(robot,ref_point)
    #cloak module
+   #key list ref http://www.kbdedit.com/manual/low_level_vk_list.html
    my_action=Action.new
    my_action.speak("cloaking")
    single_click(robot,ref_point) #move mouse to see the buttons 
-   robot.delay(100)
-   robot.keyPress(KeyEvent::VK_1)
-   robot.delay(50)
-   robot.keyRelease(KeyEvent::VK_1)
+   robot.keyPress(KeyEvent::VK_F1)
+   delay=rand(70..130)
+   robot.delay(delay)
+   robot.keyRelease(KeyEvent::VK_F1)
+   delay=rand(70..130)
+   robot.delay(delay)
 end
 
 def single_click(robot,target_location)
@@ -256,10 +259,13 @@ def single_click(robot,target_location)
    #target_location=[x,y]
    target=Action.new
    target.move_mouse_to_target_like_human(robot,target_location)
-  
+   delay=rand(100..130)
+   robot.delay(delay)
+
    #left click
    robot.mousePress(InputEvent::BUTTON1_MASK)
-   robot.delay(70)
+   delay=rand(80..90)
+   robot.delay(delay)
    robot.mouseRelease(InputEvent::BUTTON1_MASK)
 end
 
@@ -268,11 +274,11 @@ def double_click(robot,target_location)
   #target_location=[x,y]
   target=Action.new
   target.move_mouse_to_target_like_human(robot,target_location)
-  
+  delay=rand(80..90)
    for i in (1..2)
-    robot.delay(70)
+    robot.delay(delay)
     robot.mousePress(InputEvent::BUTTON1_MASK)
-    robot.delay(70)
+    robot.delay(delay)
     robot.mouseRelease(InputEvent::BUTTON1_MASK)
    end
 end
