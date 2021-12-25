@@ -240,18 +240,20 @@ class Action
 
 end #end class
 
-def press1(robot,ref_point)
+def cloak_ship(robot,cloaking_module)
    #cloak module
    #key list ref http://www.kbdedit.com/manual/low_level_vk_list.html
    my_action=Action.new
    my_action.speak("cloaking")
-   single_click(robot,ref_point) #move mouse to see the buttons 
-   robot.keyPress(KeyEvent::VK_F1)
-   delay=rand(70..130)
-   robot.delay(delay)
-   robot.keyRelease(KeyEvent::VK_F1)
-   delay=rand(70..130)
-   robot.delay(delay)
+   robot.delay(500)
+   single_click(robot,target_location=cloaking_module)
+  #  #single_click(robot,ref_point) #move mouse to see the buttons 
+  #  robot.keyPress(KeyEvent::VK_1)
+  #  delay=rand(120..150)
+  #  robot.delay(delay)
+  #  robot.keyRelease(KeyEvent::VK_1)
+  #  delay=rand(110..150)
+  #  robot.delay(delay)
 end
 
 def single_click(robot,target_location)
@@ -491,6 +493,7 @@ if File.exist?(my_json_file)
 end
 
 #Screen Location: variables come from json
+cloaking_module=data_hash["cloaking_module"]
 ref_point=data_hash["screen_center"]
 align_to_top=data_hash["align_to_top"]
 align_to_bottom=data_hash["align_to_bottom"]
@@ -574,7 +577,7 @@ while in_space==1
     jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
     jump_button_pressed=1
     robot.delay(500) #1/2 second delay
-    press1(robot,ref_point) if cloaking_ship ==1
+    cloak_ship(robot,cloaking_module) if cloaking_ship ==1
   end
 
   #################

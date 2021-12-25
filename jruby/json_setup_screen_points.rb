@@ -45,7 +45,7 @@ def get_mouse_loc(robot)
 end
 
 def countdown(robot,counter)
-  if counter > 1
+  if counter > 3
      speak(robot,"hold",counter)
      robot.delay(500)
   else
@@ -59,7 +59,7 @@ def request_data(robot,label,build_list,counter)
   speak(robot,label,counter)
   countdown(robot,counter)
   x,y=get_mouse_loc(robot)
-  if label =~ /yellow/ or label =~ /center/ 
+  if label =~ /yellow/ or label =~ /center/ or label =~ /cloak/
     #a.push([ "label1",[1,2] ] ) #working format
     build_list.push([ "#{label}", [x,y] ])
     #build_list.push(["#{label}[#{x},#{y}]"])
@@ -83,6 +83,7 @@ speak(robot,"defining setup",counter)
 
 map_of_stored_data={
   "screen_center"             => "move the mouse to the center of the screen", 
+  "cloaking_module"           => "move to the location of the cloaking module",
   "yellow_icon_left_top"      => "Yellow icon top Where do you wnat the scan for icon to start",
   "yellow_icon_right_bottom"  => "Yellow icon bottom where do you wnat the scan for icon to end",
   "align_to"                  => "move to the align to button.",
