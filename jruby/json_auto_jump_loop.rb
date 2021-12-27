@@ -240,11 +240,13 @@ class Action
 
 end #end class
 
-def cloak_ship(robot,cloaking_module)
+def cloak_ship(robot,cloaking_module,debug)
    #cloak module
    #key list ref http://www.kbdedit.com/manual/low_level_vk_list.html
-   my_action=Action.new
-   my_action.speak("cloaking")
+   if debug==1
+     my_action=Action.new
+     my_action.speak("cloaking")
+   end
    robot.delay(500)
    single_click(robot,target_location=cloaking_module)
   #  #single_click(robot,ref_point) #move mouse to see the buttons 
@@ -576,8 +578,12 @@ while in_space==1
     my_action.speak("go 1 jump") #if debug ==1
     jump_count=my_action.hit_the_jump_button(robot,target_location=jump_button_top,jump_count)
     jump_button_pressed=1
-    robot.delay(500) #1/2 second delay
-    cloak_ship(robot,cloaking_module) if cloaking_ship ==1
+    if jump_count==1
+      robot.delay(7000) #10 second delay near station
+    else
+      robot.delay(500) #1/2 second delay
+    end
+    cloak_ship(robot,cloaking_module,debug) if cloaking_ship ==1
   end
 
   #################
