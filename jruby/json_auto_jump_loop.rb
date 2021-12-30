@@ -632,7 +632,12 @@ while in_space==1
 
     minutes, seconds = align_time.divmod(60) # convert runtime to minutes and seconds
     puts "align time was #{minutes} mins #{seconds} seconds"
-    my_action.speak("align time was #{minutes} mins #{seconds} seconds")  
+    if minutes < 1
+      my_action.speak("align time  #{seconds} seconds")
+    else
+      my_action.speak("align time #{minutes} mins #{seconds} seconds")
+    end
+    
 
     
     ###################
@@ -711,8 +716,11 @@ while in_space==1
     jump_end_time=Time.now.to_i #get time in secs
     jump_time=jump_end_time-jump_start_time
     minutes, seconds = jump_time.divmod(60) # convert runtime to minutes and seconds
-
-    my_action.speak("jump #{jump_count} complete in #{minutes} minutes and #{seconds} secs")
+    if minutes < 1
+      my_action.speak("jump #{jump_count} #{seconds} secs")
+    else
+      my_action.speak("jump #{jump_count} #{minutes} minutes and #{seconds} secs")
+    end   
   end
   
 end  
