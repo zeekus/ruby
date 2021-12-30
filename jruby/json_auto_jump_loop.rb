@@ -628,13 +628,13 @@ while in_space==1
        end
     end
 
-    align_time=Time.now.to_i-align_time_start #time to align
-    minutes, seconds = align_time.divmod(60) # convert runtime to minutes and seconds
-    puts "align time was #{minutes} mins #{seconds} seconds"
+    
+    min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
+    puts "align time was #{min} mins #{sec} seconds"
     if minutes < 1
-      my_action.speak("align time #{seconds} seconds")
+      my_action.speak("align time #{sec} seconds")
     else
-      my_action.speak("align time #{minutes} mins #{seconds} seconds")
+      my_action.speak("align time #{min} mins #{sec} seconds")
     end
     
 
@@ -675,19 +675,18 @@ while in_space==1
       if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
         my_action.speak("docking finished")
         end_time=Time.now.to_i #get time in secs
-        run_time=end_time-jump_start_time
-        minutes, seconds = run_time.divmod(60) # convert runtime to minutes and seconds
+        minutes, seconds=Time.now.to_i-jump_start_time.divmod(60)
         puts "run time was #{minutes} mins #{seconds} seconds"
         exit 
       end
 
       warp_timer=Time.now.to_i-warp_start #get time in secs #get time in secs
       #work around cloaker ship not registering jump
-      if warp_timer > 15 and cloaking_ship ==1 and second_click==0
+      if warp_timer > 15 and cloaking_ship == 1 and second_click==0 and icon_is_visable=="yes"
         #single click jump
         mydelay=rand(101..500)
         robot.delay(mydelay)
-        check_clickable(robot,"white_icon",clicks=1,jump_button_top,jump_button_bottom,rgb_color_map,debug)
+        single_click(robot,target_location=jump_button_bottom) #force single click
         second_click=1
       end
       
@@ -715,8 +714,8 @@ while in_space==1
      end
     end
    
-    jump_time=Time.now.to_i-jump_start_time #time to jump
-    minutes, seconds = jump_time.divmod(60) # convert runtime to minutes and seconds
+    minutes, seconds=Time.now.to_i-jump_start_time.divmod(60) #time to jump
+  
     if minutes < 1
       my_action.speak("jump #{jump_count} #{seconds} secs")
     else
