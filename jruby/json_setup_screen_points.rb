@@ -82,8 +82,9 @@ counter=0
 speak(robot,"defining setup",counter)
 
 map_of_stored_data={
-  "screen_center"             => "move the mouse to the center of the screen", 
+  "screen_center"             => "move the mouse to the center of the screen",
   "cloaking_module"           => "move to the location of the cloaking module",
+  "microwarp_module"          => "move to the location of the microwarp  module",
   "yellow_icon_left_top"      => "Yellow icon top Where do you wnat the scan for icon to start",
   "yellow_icon_right_bottom"  => "Yellow icon bottom where do you wnat the scan for icon to end",
   "align_to"                  => "move to the align to button.",
