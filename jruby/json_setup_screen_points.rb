@@ -59,7 +59,7 @@ def request_data(robot,label,build_list,counter)
   speak(robot,label,counter)
   countdown(robot,counter)
   x,y=get_mouse_loc(robot)
-  if label =~ /yellow/ or label =~ /center/ or label =~ /cloak/
+  if label =~ /yellow/ or label =~ /center/ or label =~ /cloak/ or label =~ /micro/
     #a.push([ "label1",[1,2] ] ) #working format
     build_list.push([ "#{label}", [x,y] ])
     #build_list.push(["#{label}[#{x},#{y}]"])

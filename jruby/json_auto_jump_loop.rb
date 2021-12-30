@@ -228,10 +228,10 @@ class Action
    return my_color
   end
 
-  def hit_the_button(robot,target_location,jump_count)
+  def hit_the_button(robot,target_location,jump_count,message)
     #Hit the press the jump button 
     my_message=double_click(robot,target_location)
-    self.speak("jump")
+    self.speak(message) #j for jump a for align
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
@@ -241,12 +241,14 @@ class Action
 end #end class
 
 def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
+
    #cloak module
    #key list ref http://www.kbdedit.com/manual/low_level_vk_list.html
    if debug==1
      my_action=Action.new
      my_action.speak("cloaking")
    end
+   
    mydelay=rand(10..20)
    robot.delay(mydelay)
    single_click(robot,target_location=micro_warpdrive)
@@ -493,7 +495,7 @@ end
 
 #Screen Location: variables come from json
 cloaking_module=data_hash["cloaking_module"]
-microwarp_module_top=data_hash["microwarp_module_top"]
+microwarp_module=data_hash["microwarp_module"]
 ref_point=data_hash["screen_center"]
 align_to_top=data_hash["align_to_top"]
 align_to_bottom=data_hash["align_to_bottom"]
@@ -576,12 +578,12 @@ while in_space==1
     my_action.speak("go 1 jump") #if debug ==1
     if cloaking_ship == 1
       puts "hit the align button"
-      my_action.hit_the_button(robot,target_location=align_to_top,jump_count)
+      my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a")
       puts "cloaking routine"
-      cloak_ship(robot,cloaking_module,microwarp_module_top,debug)
+      cloak_ship(robot,cloaking_module,microwarp_module,debug)
     end
  
-    jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count)
+    jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j")
     jump_button_pressed=1
     if jump_count==1
       robot.delay(7000) #10 second delay near station
@@ -611,7 +613,7 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        my_action.hit_the_button(robot,target_location=jump_button_top,jump_count)
+        my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j")
         wait_count=0 #reset wait count
        else 
         my_action.speak("#{wait_count}") #counter 
