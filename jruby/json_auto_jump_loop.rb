@@ -607,6 +607,8 @@ while in_space==1
     #Ship should be speeding up. Wait until the blue bar is full speed.
     #######################################################
     wait_count =0
+
+    align_time_start=Time.now.to_i #get time in secs
     
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed."
@@ -621,15 +623,26 @@ while in_space==1
         my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j")
         wait_count=0 #reset wait count
        else 
-        my_action.speak("#{wait_count}") #counter 
+        puts "waiting for align #{wait_count}"
+        #my_action.speak("#{wait_count}") #counter 
        end
     end
+    align_time_end=Time.now.to_i #get time in secs
+    align_time=align_time_end-align_time_start
+
+    minutes, seconds = align_time.divmod(60) # convert runtime to minutes and seconds
+    puts "align time was #{minutes} mins #{seconds} seconds"
+    my_action.speak("align time was #{minutes} mins #{seconds} seconds")  
+
     
     ###################
     #SEQ 3. waiting for jump completion
     ###################
     my_action.speak("go 3 waiting for jump")
     jump_seq_complete=0
+    warp_start=Time.now.to_i #get time in secs
+    warp_timer=0 #monitor warp time
+    second_click=0 
     #######################################################
     #problem area - logs are not always working/reliable. 
     #Upon jump to a new systems we should get a log entry. *Note* this ocassionally fails. 
@@ -663,6 +676,15 @@ while in_space==1
         puts "run time was #{minutes} mins #{seconds} seconds"
         exit 
       end
+
+      warp_timer=Time.now.to_i-warp_start #get time in secs #get time in secs
+      #work around cloaker ship not registering jump
+      if warp_timer > 30 and cloaking_ship ==1 and second_click==0
+        #single click jump
+        my_message=check_clickable(robot,"white_icon",clicks=1,jump_button_top,jump_button_bottom,rgb_color_map,debug)
+        second_click=1
+      end
+      
     end
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
