@@ -20,6 +20,8 @@ java_import 'java.awt.Toolkit'          #gets screens size
 #use http://www.drpeterjones.com/colorcalc to verify colors
 #blue range r(70-134),g(130-180),b(170-200)
 
+start_time=Time.now.to_i #get time in secs
+
 
 class Action
 
@@ -325,6 +327,7 @@ def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_
 end
 
 def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
+  wait_until_we_are_moving_start_time=Time.now.to_i #get time in secs
   my_action=Action.new
   my_action.speak("waiting on movement") if debug==1
   are_we_moving="no"
@@ -335,8 +338,9 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
     my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
   end
-
-  my_action.speak("movement detected")
+  wait_until_we_are_moving_end_time=Time.now.to_i #get time in secs
+  diff=wait_until_we_are_moving_end_time-wait_until_we_are_moving_start_time
+  my_action.speak("movement detected in #{diff} seconds")
   return "yes" #results 
   
 end
@@ -576,6 +580,7 @@ while in_space==1
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
     my_action.speak("go 1 jump") #if debug ==1
+    jump_start_time=Time.now.to_i #get time in secs
     if cloaking_ship == 1
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a")
@@ -652,6 +657,10 @@ while in_space==1
       end
       if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
         my_action.speak("docking finished")
+        end_time=Time.now.to_i #get time in secs
+        run_time=end_time-jump_start_time
+        minutes, seconds = run_time.divmod(60) # convert runtime to minutes and seconds
+        puts "run time was #{minutes} mins #{seconds} seconds"
         exit 
       end
     end
@@ -677,7 +686,13 @@ while in_space==1
        wait_count=0 #reset wait count
      end
     end
-    my_action.speak("jump #{jump_count} complete")
+    jump_end_time=Time.now.to_i #get time in secs
+    jump_time=jump_end_time-jump_start_time
+    minutes, seconds = jump_time.divmod(60) # convert runtime to minutes and seconds
+
+    my_action.speak("jump #{jump_count} complete in #{minutes} minutes and #{seconds} secs")
   end
   
 end  
+
+
