@@ -688,7 +688,7 @@ while in_space==1
         #single click jump
         mydelay=rand(101..500)
         robot.delay(mydelay)
-        my_message=check_clickable(robot,"white_icon",clicks=1,jump_button_top,jump_button_bottom,rgb_color_map,debug)
+        check_clickable(robot,"white_icon",clicks=1,jump_button_top,jump_button_bottom,rgb_color_map,debug)
         second_click=1
       end
       
