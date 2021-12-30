@@ -627,8 +627,8 @@ while in_space==1
         #my_action.speak("#{wait_count}") #counter 
        end
     end
-    align_time_end=Time.now.to_i #get time in secs
-    align_time=align_time_end-align_time_start
+
+    align_time=Time.now.to_i-align_time_start #time to align
 
     minutes, seconds = align_time.divmod(60) # convert runtime to minutes and seconds
     puts "align time was #{minutes} mins #{seconds} seconds"
@@ -684,8 +684,10 @@ while in_space==1
 
       warp_timer=Time.now.to_i-warp_start #get time in secs #get time in secs
       #work around cloaker ship not registering jump
-      if warp_timer > 30 and cloaking_ship ==1 and second_click==0
+      if warp_timer > 15 and cloaking_ship ==1 and second_click==0
         #single click jump
+        mydelay=rand(101..500)
+        robot.delay(mydelay)
         my_message=check_clickable(robot,"white_icon",clicks=1,jump_button_top,jump_button_bottom,rgb_color_map,debug)
         second_click=1
       end
@@ -713,8 +715,8 @@ while in_space==1
        wait_count=0 #reset wait count
      end
     end
-    jump_end_time=Time.now.to_i #get time in secs
-    jump_time=jump_end_time-jump_start_time
+   
+    jump_time=Time.now.to_i-jump_start_time #time to jump
     minutes, seconds = jump_time.divmod(60) # convert runtime to minutes and seconds
     if minutes < 1
       my_action.speak("jump #{jump_count} #{seconds} secs")
