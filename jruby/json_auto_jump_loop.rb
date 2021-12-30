@@ -338,9 +338,9 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
     my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
   end
-  wait_until_we_are_moving_end_time=Time.now.to_i #get time in secs
-  diff=wait_until_we_are_moving_end_time-wait_until_we_are_moving_start_time
-  my_action.speak("movement detected in #{diff} seconds")
+  diff=Time.now.to_i-wait_until_we_are_moving_start_time
+  minutes, seconds = diff.divmod(60) # convert runtime to minutes and seconds
+  my_action.speak("movement detected in #{seconds} seconds")
   return "yes" #results 
   
 end
@@ -629,11 +629,10 @@ while in_space==1
     end
 
     align_time=Time.now.to_i-align_time_start #time to align
-
     minutes, seconds = align_time.divmod(60) # convert runtime to minutes and seconds
     puts "align time was #{minutes} mins #{seconds} seconds"
     if minutes < 1
-      my_action.speak("align time  #{seconds} seconds")
+      my_action.speak("align time #{seconds} seconds")
     else
       my_action.speak("align time #{minutes} mins #{seconds} seconds")
     end
