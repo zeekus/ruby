@@ -485,13 +485,65 @@ rgb_color_map={
   ship_align_secs={
         "f"  =>  5,  #frig
         "t"  =>  7,  #transport
-        "c"  =>  15, #cruiser 
+        "cr" =>  15, #cruiser 
         "h"  =>  20, #hauler
         "bs" =>  20, #battleship
-        "fr" =>  65, #freighter
+        "fr" =>  65  #freighter
 }
+####################
+#default settings
+####################
+destination_selected=0  #status of yellow selection
+in_space=1              #status of ship - always 1
+jump_count = 0          #counter for jumps   
+icon_is_visable="no"    #status of icon on right of screen
+are_we_moving="no"      #status of ship blue check
+are_we_stopped="yes"    #status of ship grey check 
+icon_found_count=0      #counter for stats
+icon_notfound_count=0   #counter for icon misses
+debug=0                #espeak gets chatty with debug =1 
+cloaking_ship=0
+ship_align_time=ship_align_secs["h"] #hauler is the default with a 20 second align time
 
+def help(command,ship_align_secs)
+  puts "help was called"
+  puts "#{command} use: -c -s:t for cloaking transport"
+  puts "#{command} use: -s:cr for cruiser with no cloak"
+  puts "ship types defined:"
+  for key,values in ship_align_secs
+    print key + ", "
+  end
+end
 
+puts "length of the 'ARGV' array is: " + ARGV.length.to_s  if debug==1
+
+for i in 0 ... ARGV.length
+  puts "MAIN DEBUG#{i}: '#{ARGV[i].chomp}'" if debug==1
+  if ARGV[i] =~ /-/ and ARGV[i] !~ /-help/ #alternate run 'help' is found
+    puts "DEBUG#{i}: flag detected '#{ARGV[i].chomp}'" if debug==1
+    arg_count=i+1
+    puts "DEBUG#{i}: associated with'#{ARGV[arg_count].chomp}'" if debug==1
+  elsif ARGV[i].chomp =~ /-help/ or ARGV[i] =~ /\s+/ #need help
+    puts "DEBUG3: 'help command received'" if debug==1
+    help(command=$0,ship_align_secs)
+  else
+    puts ""
+  end
+end
+
+for string in ARGV
+ puts "You typed `#{string}` as your argument(s)." if debug==1
+ if string =~ /-c/
+  cloaking_ship=1
+  puts "cloaking is enabled"
+ end 
+ if string =~/-s/
+  my_string=string.split(/:/)[1]
+  ship_align_time=ship_align_secs["#{my_string}"]
+  puts "align time is set to : #{ship_align_time}"
+ end
+
+end
 
 #test area for above class
 robot = Robot.new
@@ -504,6 +556,7 @@ if File.exist?(my_json_file)
   file = File.read(my_json_file)
   data_hash = JSON.load(file) #load in json file holding locations
 end
+
 
 
 
@@ -525,21 +578,9 @@ yellow_icon_left_top=data_hash["yellow_icon_left_top"]
 yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 gold_undock=data_hash["gold_undock"]
 
-#default settings
-####################
-destination_selected=0  #status of yellow selection
-in_space=1              #status of ship - always 1
-jump_count = 0          #counter for jumps   
-icon_is_visable="no"    #status of icon on right of screen
-are_we_moving="no"      #status of ship blue check
-are_we_stopped="yes"    #status of ship grey check 
-icon_found_count=0      #counter for stats
-icon_notfound_count=0   #counter for icon misses
-debug=0                #espeak gets chatty with debug =1 
 
-#to do replace with variables as an arg later
-cloaking_ship=0
-ship_align_time=ship_align_secs["h"] #hauler
+
+
 my_start=Time.now.to_i #runtime start
 
 while in_space==1 
