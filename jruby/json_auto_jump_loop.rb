@@ -631,7 +631,7 @@ while in_space==1
     
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
     puts "align time was #{min} mins #{sec} seconds"
-    if minutes < 1
+    if min < 1
       my_action.speak("align time #{sec} seconds")
     else
       my_action.speak("align time #{min} mins #{sec} seconds")
@@ -675,8 +675,8 @@ while in_space==1
       if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
         my_action.speak("docking finished")
         end_time=Time.now.to_i #get time in secs
-        minutes, seconds=Time.now.to_i-jump_start_time.divmod(60)
-        puts "run time was #{minutes} mins #{seconds} seconds"
+        min,sec=Time.now.to_i-jump_start_time.divmod(60)
+        puts "run time was #{min} mins #{sec} seconds"
         exit 
       end
 
@@ -714,12 +714,12 @@ while in_space==1
      end
     end
    
-    minutes, seconds=Time.now.to_i-jump_start_time.divmod(60) #time to jump
+    min,sec=(Time.now.to_i-jump_start_time).divmod(60) #time to jump
   
-    if minutes < 1
-      my_action.speak("jump #{jump_count} #{seconds} secs")
+    if min < 1
+      my_action.speak("jump #{jump_count} #{sec} secs")
     else
-      my_action.speak("jump #{jump_count} #{minutes} minutes and #{seconds} secs")
+      my_action.speak("jump #{jump_count} #{min} minutes and #{sec} secs")
     end   
   end
   
