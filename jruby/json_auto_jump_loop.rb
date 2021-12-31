@@ -699,7 +699,7 @@ while in_space==1
     ###################
     my_action.speak("go 3 waiting for jump")
     jump_seq_complete=0
-    warp_start=Time.now.to_i #get time in secs
+    in_hyper_jump=Time.now.to_i #get time in secs
     second_click=0 
     #######################################################
     #problem area - logs are not always working/reliable. 
@@ -710,9 +710,16 @@ while in_space==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
 
-      #Fail SAFE check for icon
+      #Fail SAFE check for icon and monitor speed
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+      are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
+
+      #ocassionally we mess up a jump. This should catch it. 
+      if are_we_moving=="no" and jump_seq_complete==0 and icon_is_visable =="yes"
+        single_click(robot,target_location=jump_button_bottom) #force single click
+        robot.delay(1000)
+      end
       
       parsed_log=log_reader(debug) #gives an array for some reason
       if parsed_log.to_s =~ /jumping/i or  icon_is_visable=="no"
@@ -733,7 +740,7 @@ while in_space==1
         exit 
       end
       
-      min,secs=(Time.now.to_i-warp_start).divmod(60)
+      min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
       #work around cloaker ship not registering jump
       if secs > 15 and cloaking_ship == 1 and second_click==0 and icon_is_visable=="yes"
         #single click jump
@@ -742,8 +749,10 @@ while in_space==1
         single_click(robot,target_location=jump_button_bottom) #force single click
         second_click=1
       end
-      
     end
+    mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
+    my_action.speak("Time in warp was #{mins} mins and #{secs} secs")
+
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
     ########################################################
