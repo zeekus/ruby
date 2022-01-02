@@ -732,12 +732,12 @@ while in_space==1
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
         # #ocassionally we mess up a jump. This should catch it. 
-        if secs > 15 and cloaking_ship == 1 and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 2
+        if secs > 15 and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 1
           #single click jump
           my_action.speak("pressing jump again at #{secs} secs") if debug == 1
           single_click(robot,target_location=jump_button_bottom) #force single click
           my_jump_click_again = my_jump_click_again + 1
-          mydelay=rand(1000..3000)
+          mydelay=rand(500..1500)
           robot.delay(mydelay)
         end
       end
