@@ -636,7 +636,7 @@ while in_space==1
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
     my_action.speak("go 1 jump") if debug ==1
-    jump_start_time=Time.now.to_i #get time in secs
+    runtime_start=Time.now.to_i #get time in secs
     if cloaking_ship == 1
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
@@ -714,6 +714,7 @@ while in_space==1
       #Fail SAFE check for icon and monitor speed
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+      button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
       parsed_log=log_reader(debug) #gives an array for some reason
@@ -732,7 +733,7 @@ while in_space==1
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
         # #ocassionally we mess up a jump. This should catch it. 
-        if secs > 15 and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 1
+        if jump_button_visable == "yes" and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 2 and secs > (ship_align_time*2)
           #single click jump
           my_action.speak("pressing jump again at #{secs} secs") if debug == 1
           single_click(robot,target_location=jump_button_bottom) #force single click
@@ -753,7 +754,7 @@ while in_space==1
  
     end
     mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
-    #my_action.speak("Time in warp was #{mins} #{secs} secs")
+    my_action.speak("Time in warp was #{mins} #{secs} secs")
 
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
@@ -780,12 +781,12 @@ while in_space==1
      end
     end
    
-    min,sec=(Time.now.to_i-jump_start_time).divmod(60) #time to jump
+    min,sec=(Time.now.to_i-runtime_start).divmod(60) #time to jump
   
-    if min < 1
-      my_action.speak("jump #{jump_count} #{sec} secs")
+    if min == 0 
+      my_action.speak("runtime jump #{jump_count} #{sec} secs")
     else
-      my_action.speak("jump #{jump_count} #{min} minutes and #{sec} secs")
+      my_action.speak("runtime jump #{jump_count} #{min} minutes and #{sec} secs")
     end   
   end
   
