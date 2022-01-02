@@ -230,10 +230,11 @@ class Action
    return my_color
   end
 
-  def hit_the_button(robot,target_location,jump_count,message)
+  def hit_the_button(robot,target_location,jump_count,message,debug)
     #Hit the press the jump button 
     my_message=double_click(robot,target_location)
-    self.speak(message) #j for jump a for align
+    #j for jump a for align 
+    self.speak(message) if debug == 1
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
@@ -634,18 +635,22 @@ while in_space==1
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
-    my_action.speak("go 1 jump") #if debug ==1
+    my_action.speak("go 1 jump") if debug ==1
     jump_start_time=Time.now.to_i #get time in secs
     if cloaking_ship == 1
       puts "hit the align button"
-      my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a")
+      my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
       puts "cloaking routine"
       cloak_ship(robot,cloaking_module,microwarp_module,debug)
     end
  
-    jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j")
+    jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
     jump_button_pressed=1
     if jump_count==1
+      if cloaking_ship == 1 #press the microwarp drive to get away from the station
+         my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
+         my_action.hit_the_button(robot,target_location=microwarp_module,debug)
+      end 
       robot.delay(7000) #10 second delay near station
     else
       robot.delay(500) #1/2 second delay
@@ -676,7 +681,7 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j")
+        my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
         wait_count=0 #reset wait count
        else 
         puts "waiting for align #{wait_count}"
@@ -697,15 +702,15 @@ while in_space==1
     ###################
     #SEQ 3. waiting for jump completion
     ###################
-    my_action.speak("go 3 waiting for jump")
+    my_action.speak("go 3 waiting for jump") if debug ==1
     jump_seq_complete=0
     in_hyper_jump=Time.now.to_i #get time in secs
-    second_click=0 
     #######################################################
     #problem area - logs are not always working/reliable. 
     #Upon jump to a new systems we should get a log entry. *Note* this ocassionally fails. 
     #######################################################
     wait_count =0
+    single_click = 0 # work around for stuck gates 
     until jump_seq_complete==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
@@ -715,13 +720,14 @@ while in_space==1
       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-      #ocassionally we mess up a jump. This should catch it. 
-      if are_we_moving=="no" and jump_seq_complete==0 and icon_is_visable =="yes"
-        single_click(robot,target_location=jump_button_bottom) #force single click
-        robot.delay(1000)
-      end
+     
+      # if are_we_moving=="no" and jump_seq_complete==0 and icon_is_visable =="yes"
+      #   single_click(robot,target_location=jump_button_bottom) #force single click
+      #   robot.delay(1000)
+      # end
       
       parsed_log=log_reader(debug) #gives an array for some reason
+      #jump check 
       if parsed_log.to_s =~ /jumping/i or  icon_is_visable=="no"
         puts "*debug log_reader returned* string '#{parsed_log}'"
         if parsed_log !="" #default returns nothing
@@ -732,7 +738,21 @@ while in_space==1
         end
         jump_seq_complete=1
         robot.delay(2000) #screen blinks. This is a work around. 
+      else
+        min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
+        #work around cloaker ship not registering jump
+        # #ocassionally we mess up a jump. This should catch it. 
+        if secs > 8 and secs < 15 and cloaking_ship == 1 and icon_is_visable=="yes" and are_we_moving=="no" and single_click == 0
+          #single click jump
+          my_action.speak("pressing jump again at #{secs} secs")
+          mydelay=rand(1000..3000)
+          robot.delay(mydelay)
+          single_click(robot,target_location=jump_button_bottom) #force single click
+          single_click =1 
+        end
       end
+
+      #docking check 
       if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
         my_action.speak("docking finished")
         min,sec=(Time.now.to_i-my_start).divmod(60)
@@ -740,18 +760,10 @@ while in_space==1
         exit 
       end
       
-      min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
-      #work around cloaker ship not registering jump
-      if secs > 15 and cloaking_ship == 1 and second_click==0 and icon_is_visable=="yes"
-        #single click jump
-        mydelay=rand(250..400)
-        robot.delay(mydelay)
-        single_click(robot,target_location=jump_button_bottom) #force single click
-        second_click=1
-      end
+ 
     end
     mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
-    my_action.speak("Time in warp was #{mins} mins and #{secs} secs")
+    #my_action.speak("Time in warp was #{mins} #{secs} secs")
 
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
@@ -762,9 +774,9 @@ while in_space==1
     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
     until icon_is_visable=="yes" and jump_button_visable=="yes"
-     my_action.speak("go 4 refresh") 
+     my_action.speak("go 4 refresh") if debug == 1 
      print "checking refresh"
-     robot.delay(500)  #1/2 second delay
+     robot.delay(250)  #1/2 second delay
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
