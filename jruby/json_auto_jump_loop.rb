@@ -312,7 +312,7 @@ end
 def check_clickable(robot,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
   #move the pointer to the target location like a human before clicking 
   my_action=Action.new
-  my_action.speak("scanning for clickable target")
+  my_action.speak("scanning for clickable target") if debug ==1 
   target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
 
    if target_location != [0,0] and target_location != nil 
@@ -596,7 +596,7 @@ while in_space==1
   ###########################################
   if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
     robot.delay(500)  #1/2 second delay
-    my_action.speak("go 0 single click") 
+    my_action.speak("go 0 single click") if debug == 1
     single_click(robot,ref_point) #click on center of screen 
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
@@ -706,7 +706,7 @@ while in_space==1
     #Upon jump to a new systems we should get a log entry. *Note* this ocassionally fails. 
     #######################################################
     wait_count =0
-    single_click = 0 # work around for stuck gates 
+    my_jump_click_again = 0 # work around for stuck gates 
     until jump_seq_complete==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
@@ -716,12 +716,6 @@ while in_space==1
       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-     
-      # if are_we_moving=="no" and jump_seq_complete==0 and icon_is_visable =="yes"
-      #   single_click(robot,target_location=jump_button_bottom) #force single click
-      #   robot.delay(1000)
-      # end
-      
       parsed_log=log_reader(debug) #gives an array for some reason
       #jump check 
       if parsed_log.to_s =~ /jumping/i or  icon_is_visable=="no"
@@ -738,13 +732,13 @@ while in_space==1
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
         # #ocassionally we mess up a jump. This should catch it. 
-        if secs > 8 and secs < 15 and cloaking_ship == 1 and icon_is_visable=="yes" and are_we_moving=="no" and single_click == 0
+        if secs > 15 and cloaking_ship == 1 and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 2
           #single click jump
-          my_action.speak("pressing jump again at #{secs} secs")
+          my_action.speak("pressing jump again at #{secs} secs") if debug == 1
+          single_click(robot,target_location=jump_button_bottom) #force single click
+          my_jump_click_again = my_jump_click_again + 1
           mydelay=rand(1000..3000)
           robot.delay(mydelay)
-          single_click(robot,target_location=jump_button_bottom) #force single click
-          single_click =1 
         end
       end
 
