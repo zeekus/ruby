@@ -647,10 +647,6 @@ while in_space==1
     jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
     jump_button_pressed=1
     if jump_count==1
-      if cloaking_ship == 1 #press the microwarp drive to get away from the station
-         my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
-         my_action.hit_the_button(robot,target_location=microwarp_module,debug)
-      end 
       robot.delay(7000) #10 second delay near station
     else
       robot.delay(500) #1/2 second delay
