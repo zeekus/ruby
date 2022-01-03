@@ -641,8 +641,10 @@ while in_space==1
     if cloaking_ship == 1
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
-      puts "cloaking routine"
-      cloak_ship(robot,cloaking_module,microwarp_module,debug)
+      if jump_count > 0 #only cloak when on second jump to avoid stations.
+        puts "cloaking routine"
+        cloak_ship(robot,cloaking_module,microwarp_module,debug)
+      end
     end
  
     jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
@@ -721,7 +723,7 @@ while in_space==1
 
       parsed_log=log_reader(debug) #gives an array for some reason
       #jump check 
-      if parsed_log.to_s =~ /jumping/i or  icon_is_visable=="no"
+      if parsed_log.to_s =~ /jumping/i or  ( icon_is_visable=="no" and are_we_moving =="no") 
         puts "*debug log_reader returned* string '#{parsed_log}'"
         if parsed_log !="" #default returns nothing
           my_action.speak(parsed_log)
@@ -730,7 +732,12 @@ while in_space==1
           robot.delay(5000) #5 second delay
         end
         jump_seq_complete=1
-        robot.delay(2000) #screen blinks. This is a work around. 
+        robot.delay(2000) #screen blinks. This is a work around.
+      elsif  parsed_log.to_s =~ /dock/i 
+        my_action.speak("docking finished")
+        min,sec=(Time.now.to_i-my_start).divmod(60)
+        puts "run time was #{min} mins #{sec} seconds"
+        exit 
       else
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
@@ -751,13 +758,13 @@ while in_space==1
         end
       end
 
-      #docking check 
-      if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
-        my_action.speak("docking finished")
-        min,sec=(Time.now.to_i-my_start).divmod(60)
-        puts "run time was #{min} mins #{sec} seconds"
-        exit 
-      end
+      # #docking check 
+      # if parsed_log.to_s =~ /dock/i and parsed_log !~ /jumping/i
+      #   my_action.speak("docking finished")
+      #   min,sec=(Time.now.to_i-my_start).divmod(60)
+      #   puts "run time was #{min} mins #{sec} seconds"
+      #   exit 
+      # end
       
  
     end
