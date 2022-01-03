@@ -749,6 +749,14 @@ while in_space==1
       my_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
+      ###############
+      #PROBLEM AREA Logic is not reliable in the log parsing area. 
+      #We should create a class that holds the two parse_log functions and takes a target word.
+      #Psydo code
+      #Class LogParse(target_phase,debug)
+      #   Target Phrases 'warping' or ('docking' or 'jumping')
+      #def log_reader(target_phase,debug)
+      ##############
       parsed_log=log_reader(debug) #gives an array for some reason
       #jump check 
       if ( parsed_log.to_s =~ /jumping/i and ( parsed_log.to_s !~ /dock/i and parsed_log.to_s !~ /warp/i ))
