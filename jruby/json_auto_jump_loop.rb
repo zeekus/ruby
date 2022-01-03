@@ -711,6 +711,7 @@ while in_space==1
     #######################################################
     wait_count =0
     my_jump_click_again = 0 # work around for stuck gates 
+    session_change_wait=0
     until jump_seq_complete==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
@@ -742,15 +743,16 @@ while in_space==1
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
         # #ocassionally we mess up a jump. This should catch it. 
-        if my_button_visable=="yes" and icon_is_visable=="yes" and are_we_moving=="no"
-          my_action.speak("out of warp") if debug == 1
-          session_change_wait=0
+        
+        if icon_is_visable=="yes" and are_we_moving=="no"
+          session_change_wait=session_change_wait+1
+          my_action.speak("stop #{session_change_wait}") #if debug == 1
+          
           until icon_is_visable="no" 
-             #wait 200 ms
-             robot.delay(200)
-             icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-             session_change_wait=session_change_wait+1
-             if session_change_wait % 10 == 0 and session_change_wait > 20
+            icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+            robot.delay(100)
+             
+             if session_change_wait % 10 == 0 and session_change_wait > 30
                 my_action.speak("pressing jump again") #if debug == 1
                 single_click(robot,target_location=jump_button_bottom) #force single click
              end 
