@@ -139,10 +139,10 @@ class Action
           y=y-1
         end
       else
-	     my_tmp_location=self.get_current_mouse_location(robot)
-	     self.mydebugger("move_mouse_to_target_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
-       robot.delay(1) 
-       return(1) 
+        my_tmp_location=self.get_current_mouse_location(robot)
+        self.mydebugger("move_mouse_to_target_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
+        robot.delay(10) 
+        return(1) 
       end #end if
       robot.mouseMove(x,y)
       robot.delay(1) 
@@ -238,6 +238,7 @@ class Action
     puts "We #{my_message} on warp_to_top."
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
+    
     return jump_count
   end
 
@@ -645,6 +646,7 @@ while in_space==1
     end
  
     jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
+    my_action.speak("jump #{jump_count} initiated.")
     jump_button_pressed=1
     if jump_count==1
       robot.delay(7000) #10 second delay near station
@@ -687,11 +689,11 @@ while in_space==1
     
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
     puts "align time was #{min} mins #{sec} seconds"
-    if min < 1
-      my_action.speak("align time #{sec} seconds")
-    else
-      my_action.speak("align time #{min} mins #{sec} seconds")
-    end
+    # if min < 1
+    #   my_action.speak("align time #{sec} seconds")
+    # else
+    #   my_action.speak("align time #{min} mins #{sec} seconds")
+    # end
     
 
     
@@ -714,7 +716,7 @@ while in_space==1
       #Fail SAFE check for icon and monitor speed
       icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
       are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
+      my_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
       parsed_log=log_reader(debug) #gives an array for some reason
@@ -733,13 +735,19 @@ while in_space==1
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
         # #ocassionally we mess up a jump. This should catch it. 
-        if jump_button_visable == "yes" and icon_is_visable=="yes" and are_we_moving=="no" and my_jump_click_again < 2 and secs > (ship_align_time*2)
-          #single click jump
-          my_action.speak("pressing jump again at #{secs} secs") if debug == 1
-          single_click(robot,target_location=jump_button_bottom) #force single click
-          my_jump_click_again = my_jump_click_again + 1
-          mydelay=rand(500..1500)
-          robot.delay(mydelay)
+        if my_button_visable=="yes" and icon_is_visable=="yes" and are_we_moving=="no"
+          my_action.speak("out of warp") if debug == 1
+          session_change_wait=0
+          until icon_is_visable="no" 
+             #wait 200 ms
+             robot.delay(200)
+             icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+             session_change_wait=session_change_wait+1
+             if session_change_wait % 10 == 0 and session_change_wait > 20
+                my_action.speak("pressing jump again") #if debug == 1
+                single_click(robot,target_location=jump_button_bottom) #force single click
+             end 
+          end          
         end
       end
 
@@ -753,8 +761,13 @@ while in_space==1
       
  
     end
-    mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
-    my_action.speak("Time in warp was #{mins} #{secs} secs")
+    # mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
+
+    # if mins == 0 
+    #   my_action.speak("Time in warp was #{secs} seconds")
+    # else 
+    #   my_action.speak("Time in warp was #{mins} minutes #{secs} seconds")
+    # end
 
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
@@ -781,13 +794,13 @@ while in_space==1
      end
     end
    
-    min,sec=(Time.now.to_i-runtime_start).divmod(60) #time to jump
+    # min,sec=(Time.now.to_i-runtime_start).divmod(60) #time to jump
   
-    if min == 0 
-      my_action.speak("runtime jump #{jump_count} #{sec} secs")
-    else
-      my_action.speak("runtime jump #{jump_count} #{min} minutes and #{sec} secs")
-    end   
+    # if min == 0 
+    #   my_action.speak("runtime #{sec} secs")
+    # else
+    #   my_action.speak("runtime #{min} minutes and #{sec} secs")
+    # end   
   end
   
 end  
