@@ -335,7 +335,7 @@ class Action
     end
     #j for jump a for align 
     self.speak(message) if debug == 1
-    puts "We #{my_message} on warp_to_top."
+    puts "We #{my_message} on warp_to_top." if debug==1
     jump_count = jump_count + 1
     puts "jump count is #{jump_count}. We are in warp..."
     
@@ -705,7 +705,7 @@ while in_space==1
     align_time_start=Time.now.to_i #get time in secs
     
     until are_we_moving == "yes" 
-       print "...waiting for ship to reach full speed. aligning:"
+       print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
@@ -718,11 +718,12 @@ while in_space==1
         my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
         wait_count=0 #reset wait count
        else 
-        print "#{wait_count}"
+        print "." #status bar like effect
        end
     end
     
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
+    puts "" #new line
     puts "align time was #{min} mins #{sec} seconds"
     
     ###################
@@ -817,13 +818,15 @@ while in_space==1
 
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") if debug == 1 
-     puts "refresh pause 1/2 second"
+     print "refresh pause:" if wait_count==0
+     print "."
      robot.delay(250)  #1/2 second delay 
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
      min,secs=(Time.now.to_i-wait_for_session_change).divmod(60)
      if secs % 3 == 0  and wait_count > 10 #work around - ocassionally we can lose track of the gate after completing a jump. re-scan for it if lost after 7 seconds.
+       puts "" #new line
        puts" lost white icon or jump_button: we should click on the yellow icon again."
        #check and click on the destination indicator
        my_action.speak("go 4B lost track of the gate. jump_button visible #{jump_button_visable} icon visible #{icon_is_visable}") 
@@ -831,6 +834,7 @@ while in_space==1
        wait_count=0 #reset wait count
      end
     end
+    puts "" #new line
     
   end
   
