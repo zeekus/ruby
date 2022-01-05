@@ -38,9 +38,12 @@ class Findtarget
   def generate_random_location 
     myloc=[]
     #screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    screenSize = Toolkit.getDefaultToolkit().getScreenResolution();
+    screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     width = screenSize.getWidth();
     height = screenSize.getHeight();
+    # screenSize = Toolkit.getDefaultToolkit().getScreenResolution();
+    # width = screenSize.getWidth();
+    # height = screenSize.getHeight();
     x = rand(width) 
     y = rand(height)
     myloc=[x,y]
@@ -161,8 +164,8 @@ robot = Robot.new
 mytarget=Findtarget.new
 
 targetloc=[]
-for x in 1..10
-  mytarget.speak("moving to location #{x}")
+for x in 1..10000
+  #mytarget.speak("moving to location #{x}")
   location=mytarget.get_current_mouse_location(robot)
   print "===================== move #{x} ================================\n"
   print "Prior To move: my current mouse location is #{location}\n"
