@@ -57,14 +57,6 @@ class Findtarget
     end
   end
 
-  def animated_message(message,counter)
-    if counter==1
-      print "\n#{message}:"
-    else
-      print "."
-    end
-  end
-
   def move_to_target_pixel_like_human(robot,target_location,debug=1)
     myloc=[] 
     myloc=get_current_mouse_location(robot)
@@ -73,53 +65,113 @@ class Findtarget
     x=myloc[0]
     y=myloc[1]
     counter=0
-    until myloc==target_location do   
-      if ( x > target_location[0] and y > target_location[1] ) #moving pointer up and left
+    until myloc==target_location do
+    
+      #moving pointer up and left
+      if ( x > target_location[0] and y > target_location[1] )
+          counter=counter+1
+          puts "up and left" if counter==1 and debug==1
+	        if ( x-5 > target_location[0] && y-5 > target_location[1]) 
+            #fast moving to up and left by 5 
+            x=x-5
+            y=y-5
+	        else
+            #slow moving to up and left by 1
+            x=x-1
+            y=y-1
+          end
+      #moving pointer down and right 
+      elsif ( x< target_location[0] and y < target_location[1] )
         counter=counter+1
-        animated_message("up and left",counter) if debug==1
-        x=x-1
-        y=y-1
-      elsif ( x< target_location[0] and y < target_location[1] ) #moving pointer down and right
+        puts "down and right" if counter==1
+          if ( x+5 > target_location[0] && y+5> target_location[1]) 
+            #fast moving down and right x 5
+            x=x+5
+            y=y+5
+	        else
+            #slow moving down and right
+            x=x+1
+            y=y+1
+          end
+      #moving pointer down and left 
+      elsif ( x> target_location[0] and y < target_location[1] )
         counter=counter+1
-        animated_message("down and right",counter) if debug==1
-        x=x+1
-        y=y+1
-      elsif ( x> target_location[0] and y < target_location[1] ) #moving pointer down and left
+        puts "down and left" if counter==1
+        
+        if ( x-5 > target_location[0] && y+5> target_location[1]) 
+          #fast moving down and left by 5
+          x=x-5
+          y=y+5
+        else
+          #slow moving down and left
+          x=x-1
+          y=y+1
+        end
+      #moving pointer up and right
+      elsif ( x< target_location[0] and y > target_location[1] )
         counter=counter+1
-        animated_message("down and left",counter) if debug==1
-        print "." if debug==1
-        x=x-1
-        y=y+1
-      elsif ( x< target_location[0] and y > target_location[1] ) #moving pointer up and right
+        puts "up  and right" if counter==1
+        if ( x+5 > target_location[0] && y-5> target_location[1]) 
+          #fast moving up and right by 5
+          x=x+5
+          y=y-5
+	      else
+          #slow moving up and right by 1
+          x=x+1
+          y=y-1
+	      end
+      #move right only 
+      elsif ( x< target_location[0])
         counter=counter+1
-        animated_message("up and right",counter) if debug==1
-        x=x+1
-        y=y-1
-      elsif ( x< target_location[0]) #move right only
+        puts "only right" if counter==1
+        if ( x+5 > target_location[0] ) 
+          #+ #moving right by 5
+          x=x+5
+        else
+          #+ #moving right
+          x=x+1
+        end
+      #move left only 
+      elsif ( x> target_location[0])
         counter=counter+1
-        animated_message("only right",counter) if debug==1
-        x=x+1
-      elsif ( x> target_location[0]) #move left only
+        puts "only left" if counter==1
+        if ( x-5 > target_location[0] ) 
+          #fast moving left by 5
+          x=x-5
+        else
+          #slow moving left 
+          x=x-1
+        end
+      #move up only 
+      elsif ( y< target_location[1])
         counter=counter+1
-        animated_message("only left",counter) if debug==1
-        x=x-1
-      elsif ( y< target_location[1]) #move up only 
+        puts "only up" if counter==1
+        if ( y+5 > target_location[1] ) 
+          #- #moving up by 5
+          y=y+5
+        else
+          #+ #moving up
+          y=y+1
+        end
+      #move down only 
+      elsif ( y> target_location[1])
         counter=counter+1
-        animated_message("only up",counter) if debug==1
-        y=y+1
-      elsif ( y> target_location[1]) #move down only
-        counter=counter+1
-        animated_message("only down",counter) if debug==1
-        print "." if debug==1
-        y=y-1
+        puts "only downs" if counter==1
+        if ( y-5 > target_location[1] ) 
+          #fast moving down by 5
+          y=y-5
+	      else
+          #slow moving down
+          y=y-1
+        end
       else
 	     my_tmp_location=self.get_current_mouse_location(robot)
 	     self.mydebugger("move_to_target_pixel_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
-       robot.delay(1)
+       robot.delay(5)
        return(1)
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(0.1) #mouse move is based on loop (0.1 for faster)
+      robot.delay(0.1) #this delay makes the mouse movement speed
     end #end of until loop
   end #end function move_to_target_pixel_like_human
 end #end class
@@ -137,7 +189,6 @@ for x in 1..100
   targetloc=mytarget.generate_random_location()
   mytarget.move_to_target_pixel_like_human(robot,targetloc)
   location=mytarget.get_current_mouse_location(robot)
-  print "\n" #extra return
   print "After move: my current mouse location is #{location}\n"
-  robot.delay(5000)
+  robot.delay(3000)
 end
