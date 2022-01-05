@@ -22,6 +22,102 @@ java_import 'java.awt.Toolkit'          #gets screens size
 
 start_time=Time.now.to_i #get time in secs
 
+class LogParser
+     
+  def is_log_string_current(debug,loginfo,sec_threshold)
+
+    puts "is_log_string_current" + loginfo if debug ==1
+ 
+    #string stripping log date time parser
+    logtime=loginfo.gsub(/\(.*/,"").chomp                   #remove everything after the "(" character in the line
+    logtime=loginfo.gsub(/(\[|\])/,"").chomp.strip          #remove brackets around the string and extra spaces aound the string
+  
+    #converting log time to usable format. Time source from log looks like [ 2021.12.02 19:21:20 UTC ].
+    #Log example: [ 2021.12.01 21:50:52 ] (question) Are you sure you want to quit the game?
+    logtime=DateTime.strptime(logtime, '%Y.%m.%d %H:%M:%S') #convert logtime sting to usable variable
+    logtime_secs=logtime.strftime("%s")                     #convert time to seconds
+    puts "debug log time- logtime_secs #{logtime_secs}" if debug==1
+  
+    current_secs=Time.now.utc.strftime("%s")                #our logs get current time in UTC seconds
+    puts "debug - current_secs #{current_secs}" if debug==1
+    diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
+    puts "debug: diff is #{diff}" if debug==1
+    if diff < sec_threshold #theshold for number secs
+      return 1 
+    else
+      return 0
+    end
+  end
+  
+  def log_reader(debug,target_phrase,log_size,sec_threshold)
+    if debug ==1
+     puts "debug is #{debug}"
+     puts "target_phrase is #{target_phrase}"
+     puts "log_size is #{log_size}"
+     puts "sec_threshold is #{sec_threshold}"
+    end
+    #####################
+    #find latest log file
+    #####################
+    ##bash equivalent
+    ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
+    my_homedir=Dir.home
+    logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+    #logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
+    limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
+    last_log_entries=[] #empty array holding last log entries
+    #initialize variables
+    capture_string=""
+
+    myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+    if File.exists?(myfile)
+      puts "*** log_reader my last log is #{myfile}" if debug==1
+      file=File.open(myfile) #read file
+      logfile_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
+      file.close #closing file
+      # filesize=0  #get size of the file
+      # filesize=logfile_data.size
+      puts "*** log_reader gamelog file has '#{logfile_data.size}' lines" if debug==1
+      #only run if file size is greater than 5
+      if logfile_data.size  < log_size
+       puts "log_reader exiting. Listener is active but file is too small. Try exiting the station."
+       exit
+      else
+        puts "*** log limit is [#{limit}..-1]" if debug==1 
+      end
+    else 
+      if myfile !=null
+        puts "log_reader missing file #{myfile} exiting"
+      else 
+        puts "log_reader file missing" 
+      end
+    end
+
+    count=0
+    capture_string="" #default is blank
+    logfile_data.each  { |line|
+      if /^\[/.match(line) #sometimes the lines don't have the time ignore them
+        if debug ==1 
+          puts "#{count}:#{line}"  #look at it
+          count = count + 1
+        end
+        result=is_log_string_current(debug,line.chomp,sec_threshold) #current log entry only
+        if line =~ /#{target_phrase}/i  and result==1
+           if target_phrase =~ /Jumping/i or target_phrase =~ /Undocking/i 
+            capture_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
+           elsif target_phrase =~ /docking/i or target_phrase =~ /warping/i or target_phrase =~ /please wait.../i
+            capture_string = line.split("(notify) ")[1]#remove first part of line so just get the docking or warping line  
+           elsif target_phrase =~ /combat/i
+            capture_string = line.split("(combat) ")[1]
+           else
+            puts "" #do nothing
+           end
+        end
+      end
+    }
+    return capture_string #convert to string just in case
+  end #function
+end #class
 
 class Action
 
@@ -367,106 +463,6 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
   
 end
 
-def is_log_entry_current(loginfo)
-  debug=0
-  #log date time parser
-
-  #string stripping 
-  logtime=loginfo.gsub(/\(.*/,"").chomp                   #remove everything after the "(" character in the line
-  logtime=loginfo.gsub(/(\[|\])/,"").chomp.strip          #remove brackets around the string and extra spaces aound the string
-
-  #converting log time to usable format. Time source from log looks like [ 2021.12.02 19:21:20 UTC ].
-  #Log example: [ 2021.12.01 21:50:52 ] (question) Are you sure you want to quit the game?
-  logtime=DateTime.strptime(logtime, '%Y.%m.%d %H:%M:%S') #convert logtime sting to usable variable
-  logtime_secs=logtime.strftime("%s")                     #convert time to seconds
-  puts "debug log time- logtime_secs #{logtime_secs}" if debug==1
-
-
-  current_secs=Time.now.utc.strftime("%s")                #our logs get current time in UTC seconds
-  puts "debug - current_secs #{current_secs}" if debug==1
-  diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
-  puts "debug: diff is #{diff}" if debug==1
-  if diff < 10 #10 second theshold
-    #buggy ? 
-    return 1 
-  else
-    return 0
-  end
-end
-
-def log_reader(debug=1)
-  #####################
-  #find latest log file
-  #####################
-  ##bash equivalent
-  ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
-  my_homedir=Dir.home
-  logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
- 
-  myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
-  if File.exists?(myfile)
-    puts "*** log_reader my last log is #{myfile}" if debug==1
-    file=File.open(myfile) #read file
-    file_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
-    file.close #closing file
-    filesize=0  #get size of the file
-    filesize=file_data.size
-    puts "*** log_reader gamelog file has '#{filesize}' lines" if debug==1
-    #only run if file size is greater than 5
-    if filesize < 5
-     puts "log_reader exiting. Listener is active but file is too small. Try exiting the station."
-     exit
-    end
-  else 
-    puts "log_reader missing file #{myfile} exiting"
-    exit
-  end
-
- #  puts "is file_data an array ?"
- #  p file_data.instance_of? Array
- last_log_entries=[] #empty array
- ####################
- #adapt based on log size. When a lot of system activity is happening, logs may be longer.
- #################### 
- if filesize < 6
-  last_log_entries=file_data[-3..-1]  #get last 3 lines of the file_data
- elsif filesize < 11
-  last_log_entries=file_data[-8..-1]  #get last 8 lines of the file_data
- else 
-  last_log_entries=file_data[-10..-1]  #get last 10 lines of the file_data
- end
-
- #  puts "is last_log_entries an array ?"
- #  p last_log_entries.instance_of? Array
-
-  #initialize variables
-  dock_string=""
-  jump_string="" 
- 
-  last_log_entries.each do |line|  #look at it
-    if /^\[/.match(line) #sometimes the lines don't have the time ignore them
-      result=is_log_entry_current(line.chomp) #current log entry only
-      if result ==1
-        # puts "is string an array ?"
-        # p string.instance_of? Array
-        if line.to_s =~ /Requested to dock/i and line.to_s =~ /notify/i  #docking line has this 
-          dock_string = line.split("(notify) Requested to ")[1]#remove first part of line so just get the jumping info
-          return dock_string #end of journey see this
-        elsif line.to_s =~ /jumping/i and line.to_s =~ /none/i #jumping line contains this
-          jump_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
-          puts "log_reader returning '#{jump_string}'" if debug==1
-          return jump_string
-        elsif line.to_s =~  /warping/i and line.to_s =~ /notify/i #warping line warning for clicking two clicks
-          my_string = line.split("(notify) ")[1]#remove first part of line
-          return my_string
-        else 
-          puts "log_reader: no match found still looking"
-        end
-      end
-    end
-   end
-   return "" #return empty string to prevent an array from getting passed
- end
 
 
 ###################################################
@@ -578,6 +574,7 @@ end
 #test area for above class
 robot = Robot.new
 my_action=Action.new
+my_logger=LogParser.new
 
 #load in json file
 my_json_file=("/var/tmp/locations.json")
@@ -677,12 +674,13 @@ while in_space==1
 
     #check logs for this message
     #double clicks generate this text #(notify) You cannot do that while warping.
-    parsed_log=log_reader(debug) #gives an array for some reason
-    puts "#{parsed_log}"
-    if parsed_log.to_s =~ /warp/i
-      my_action.speak("logs say #{parsed_log.to_s}")
+    my_string= capture.log_reader(debug=0,"warping",log_size=5,sec_threshold=2) #warping message with double click or click on speed while in space
+    puts "2 - double clicked warpto button twice '#{my_string}'" if my_string != ""
+    if my_string =~ /warp/i
+      my_action.speak("in warp")
     else 
-      my_action.speak("did we miss the warp #{parsed_log}")
+      my_action.speak("we appaer to have missed a warp. Trying again.")
+      jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
     end 
 
     if jump_count==1
@@ -749,28 +747,25 @@ while in_space==1
       my_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-      ###############
-      #PROBLEM AREA Logic is not reliable in the log parsing area. 
-      #We should create a class that holds the two parse_log functions and takes a target word.
-      #Psydo code
-      #Class LogParse(target_phase,debug)
-      #   Target Phrases 'warping' or ('docking' or 'jumping')
-      #def log_reader(target_phase,debug)
-      ##############
-      parsed_log=log_reader(debug) #gives an array for some reason
-      #jump check 
-      if ( parsed_log.to_s =~ /jumping/i and ( parsed_log.to_s !~ /dock/i and parsed_log.to_s !~ /warp/i ))
-        puts "*debug log_reader returned* string '#{parsed_log}'"
-        my_action.speak("pl1 #{parsed_log.to_s}")
+
+      my_jump_string=capture.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=2) #jumping is slow 10 secs
+      puts "3 - jumping - '#{my_jump_string.to_s}'" if my_jump_string != ""
+
+      my_docking_string=capture.log_reader(debug=0,"docking",log_size=5,sec_threshold=2) #jumping is slow 10 secs
+      puts "3 - dockinging - '#{my_docking_string.to_s}'" if my_docking_string != ""
+
+ 
+      if ( my_jump_string =~ /jumping/i )
+        my_action.speak("#{my_jump_string}") #speak jump string from log
         jump_seq_complete=1
         robot.delay(2000) #screen blinks. This is a work around.
-      elsif  parsed_log.to_s =~ /dock/i 
+      elsif (my_docking_string =~ /docking/i )
         my_action.speak("docking finished")
         min,sec=(Time.now.to_i-my_start).divmod(60)
         puts "run time was #{min} mins #{sec} seconds"
         exit 
       elsif ( icon_is_visable=="no" and are_we_moving =="no")
-        my_action.speak("pl2 failsafe jump wait 5 secs")
+        my_action.speak("failsafe jump wait 5 secs")
         jump_seq_complete=1
         robot.delay(5000) #5 second delay
       else
