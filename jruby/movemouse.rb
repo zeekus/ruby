@@ -26,12 +26,10 @@ class Findtarget
 
 
   def get_current_mouse_location(robot)
-    my_xy=[]
-    x1=MouseInfo.getPointerInfo().getLocation().x
-    y1=MouseInfo.getPointerInfo().getLocation().y
-    my_xy=[x1,y1]
-    self.mydebugger("get_current_mouse_location", "under mouse location", my_xy) 
-    return my_xy
+    x=MouseInfo.getPointerInfo().getLocation().x
+    y=MouseInfo.getPointerInfo().getLocation().y
+    self.mydebugger("get_current_mouse_location", "under mouse location", [x,y]) 
+    return x,y
   end
 
   #test function
