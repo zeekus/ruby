@@ -40,8 +40,8 @@ class LogParser
     ##bash equivalent
     ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
     my_homedir=Dir.home
-    #logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
-    logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
+    logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+    #logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
     limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
     last_log_entries=[] #empty array holding last log entries
     #initialize variables
@@ -72,7 +72,7 @@ class LogParser
     end
 
     count=0
-    capture_string='' #default is blank
+    capture_string="" #default is blank
     logfile_data.each  { |line|
       if /^\[/.match(line) #sometimes the lines don't have the time ignore them
         if debug ==1 
@@ -81,13 +81,15 @@ class LogParser
         end
         result=is_log_string_current(debug,line.chomp,sec_threshold) #current log entry only
         if line =~ /#{target_phrase}/i  and result==1
-          if target_phrase =~ /docking/i or target_phrase =~ /warping/i
-            capture_string = line.split("(notify) ")[1]#remove first part of line so just get the docking or warping line
-          elsif target_phrase =~ /jumping/i
+           if target_phrase =~ /Jumping/i or target_phrase =~ /Undocking/i 
             capture_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
-          else
+           elsif target_phrase =~ /docking/i or target_phrase =~ /warping/i or target_phrase =~ /please wait.../i
+            capture_string = line.split("(notify) ")[1]#remove first part of line so just get the docking or warping line  
+           elsif target_phrase =~ /combat/i
+            capture_string = line.split("(combat) ")[1]
+           else
             puts "" #do nothing
-          end
+           end
         end
       end
     }
@@ -95,6 +97,28 @@ class LogParser
   end #function
 end #class
   
-capture = LogParser.new
-my_string= capture.log_reader(debug=1,"docking",log_size=5,sec_threshold=500) #debug =1, target_phrase="warp", lines=5
-puts "returned string is '#{my_string}'"
+capture=LogParser.new
+
+while 1
+
+  my_string= capture.log_reader(debug=0,"undocking",log_size=5,sec_threshold=2) #undocking ship
+  puts "0 - returned string is undocking '#{my_string}'" if my_string != ""
+
+  my_string= capture.log_reader(debug=0,"docking",log_size=5,sec_threshold=2) #docking ship
+  puts "1 docking '#{my_string}'" if my_string != ""
+
+  my_string= capture.log_reader(debug=0,"warping",log_size=5,sec_threshold=2) #warping message with double click or click on speed while in space
+  puts "2 - double clicked warpto button twice '#{my_string}'" if my_string != ""
+  
+  my_string= capture.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=2) #jumping is slow 10 secs
+  puts "3 - jumping - '#{my_string.to_s}'" if my_string != ""
+
+  my_string= capture.log_reader(debug=0,"Please wait...",log_size=5,sec_threshold=2) #aligning with double click
+  puts "4 - double clicked align button twice - aligning  '#{my_string}'" if my_string != ""
+
+  my_string= capture.log_reader(debug=0,"(combat)",log_size=5,sec_threshold=2) #combat detected
+  puts "5 - combat related - '#{my_string}'" if my_string != ""
+
+  sleep 1
+
+end
