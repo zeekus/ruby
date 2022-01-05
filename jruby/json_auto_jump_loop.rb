@@ -271,10 +271,10 @@ class Action
        
         my_best_guess=guess_color(r,g,b) 
         if ( target_color == my_best_guess) 
-          puts "possible match - The pixel could be #{target_color}"
+          puts "possible match - The pixel could be #{target_color}" if debug ==1
           return found_icon_coord
         elif rgb_color_map[hex_string] != nil and target_color
-          puts "possible match - The pixel could be #{rgb_color_map[hex_string]}"
+          puts "possible match - The pixel could be #{rgb_color_map[hex_string]}" if debug ==1
           return found_icon_coord
         else 
          if debug==1
@@ -360,8 +360,8 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
    single_click(robot,target_location=cloaking_module)
 end
 
-def randomize_xy(target_location)
-  puts "single click - original location #{target_location}"
+def randomize_xy(target_location,debug=0)
+  puts "single click - original location #{target_location}" if debug == 1
   #randomize target location a tiny bit so we are not an obvious
   rx=rand(-1..1) #tiny bit of randomness added so we don't click in the same exact spot everytime
   x=target_location[0]+rx
@@ -370,7 +370,7 @@ def randomize_xy(target_location)
   y=target_location[1]+ry
   
   new_target_location=[x,y]
-  puts "single click - randomized location #{new_target_location}"
+  puts "single click - randomized location #{new_target_location}" if debug==1
   return new_target_location
 end
 
@@ -663,24 +663,25 @@ while in_space==1
         puts "cloaking routine"
         cloak_ship(robot,cloaking_module,microwarp_module,debug)
       end
+    else
+      robot.delay(1000) #short delay for non cloaking ship
     end
  
     jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
-
-
 
     my_action.speak("jump #{jump_count}")
     jump_button_pressed=1
 
     #check logs for this message
     #double clicks generate this text #(notify) You cannot do that while warping.
-    my_string= capture.log_reader(debug=0,"warping",log_size=5,sec_threshold=2) #warping message with double click or click on speed while in space
+
+    my_string= my_logger.log_reader(debug=0,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
     puts "2 - double clicked warpto button twice '#{my_string}'" if my_string != ""
     if my_string =~ /warp/i
       my_action.speak("in warp")
     else 
-      my_action.speak("we appaer to have missed a warp. Trying again.")
-      jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
+      my_action.speak("we appear to have missed a warp. Trying again.")
+      null=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
     end 
 
     if jump_count==1
@@ -704,7 +705,7 @@ while in_space==1
     align_time_start=Time.now.to_i #get time in secs
     
     until are_we_moving == "yes" 
-       print "...waiting for ship to reach full speed."
+       print "...waiting for ship to reach full speed. aligning:"
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
@@ -717,7 +718,7 @@ while in_space==1
         my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
         wait_count=0 #reset wait count
        else 
-        puts "waiting for align #{wait_count}"
+        print "#{wait_count}"
        end
     end
     
@@ -747,27 +748,37 @@ while in_space==1
       my_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
-
-      my_jump_string=capture.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=2) #jumping is slow 10 secs
+      #scan logs for a session change
+      my_jump_string=my_logger.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
       puts "3 - jumping - '#{my_jump_string.to_s}'" if my_jump_string != ""
 
-      my_docking_string=capture.log_reader(debug=0,"docking",log_size=5,sec_threshold=2) #jumping is slow 10 secs
-      puts "3 - dockinging - '#{my_docking_string.to_s}'" if my_docking_string != ""
-
+      my_docking_string=my_logger.log_reader(debug=0,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+      puts "4 - docking - '#{my_docking_string.to_s}'" if my_docking_string != ""
  
       if ( my_jump_string =~ /jumping/i )
-        my_action.speak("#{my_jump_string}") #speak jump string from log
+        my_action.speak("1 #{my_jump_string}") #speak jump string from log
         jump_seq_complete=1
         robot.delay(2000) #screen blinks. This is a work around.
       elsif (my_docking_string =~ /docking/i )
-        my_action.speak("docking finished")
+        my_action.speak("1 docking finished")
         min,sec=(Time.now.to_i-my_start).divmod(60)
         puts "run time was #{min} mins #{sec} seconds"
         exit 
       elsif ( icon_is_visable=="no" and are_we_moving =="no")
-        my_action.speak("failsafe jump wait 5 secs")
+        #check log again for a jump
+        robot.delay(2000) #wait 2 secs
+        my_jump_string=my_logger.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
+        my_docking_string=my_logger.log_reader(debug=0,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+        if my_jump_string != ""
+          my_action.speak("2 #{my_jump_string}") #speak jump string from log
+        elsif  my_docking_string =~ /docking/i
+          my_action.speak("2 docking") #speak jump string from log
+          exit
+        else
+          my_action.speak("failsafe jump wait 4 secs")
+          robot.delay(4000) #4 second delay
+        end
         jump_seq_complete=1
-        robot.delay(5000) #5 second delay
       else
         min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
         #work around cloaker ship not registering jump
@@ -806,7 +817,7 @@ while in_space==1
 
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") if debug == 1 
-     print "checking refresh"
+     puts "refresh pause 1/2 second"
      robot.delay(250)  #1/2 second delay 
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
