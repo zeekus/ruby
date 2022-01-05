@@ -36,24 +36,18 @@ class Findtarget
 
   #test function
   def generate_random_location 
-    myloc=[]
-    #screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     width = screenSize.getWidth();
     height = screenSize.getHeight();
-    # screenSize = Toolkit.getDefaultToolkit().getScreenResolution();
-    # width = screenSize.getWidth();
-    # height = screenSize.getHeight();
     x = rand(width) 
     y = rand(height)
-    myloc=[x,y]
-    self.mydebugger("generate_random_location", "future location is", myloc ) 
-    return myloc
+    self.mydebugger("generate_random_location", "future location is", [x,y] ) 
+    return x,y
   end# end generate_random_location
 
-  def mydebugger(myfuncname,myfillerstring,mylocations)
-    if $debug==1
-      puts "DEBUG 1:#{myfuncname} #{myfillerstring} #{mylocations}" 
+  def mydebugger(myfuncname,myfillerstring,mylocations,debug=1)
+    if debug==1
+      print "\nFuture:#{myfuncname} #{myfillerstring} #{mylocations}\n" 
     end
   end
 
@@ -65,15 +59,12 @@ class Findtarget
     end
   end
 
-  def move_to_target_pixel_like_human(robot,target_location,debug=1)
-    myloc=[] 
-    myloc=get_current_mouse_location(robot)
-    mydebugger("move_to_target_pixel_like_human", "mouse location", myloc ) 
+  def move_to_target_pixel_like_human(robot,target_location,debug=1) 
+    x,y=get_current_mouse_location(robot)
+    mydebugger("move_to_target_pixel_like_human", "mouse location", [x,y] ) 
 
-    x=myloc[0]
-    y=myloc[1]
     counter=0
-    until myloc==target_location do   
+    until [x,y]==target_location do   
       if ( x > target_location[0] and y > target_location[1] ) #moving pointer up and left
         counter=counter+1
         animated_message("up and left",counter) if debug==1
@@ -87,7 +78,6 @@ class Findtarget
       elsif ( x> target_location[0] and y < target_location[1] ) #moving pointer down and left
         counter=counter+1
         animated_message("down and left",counter) if debug==1
-        print "." if debug==1
         x=x-1
         y=y+1
       elsif ( x< target_location[0] and y > target_location[1] ) #moving pointer up and right
@@ -110,7 +100,6 @@ class Findtarget
       elsif ( y> target_location[1]) #move down only
         counter=counter+1
         animated_message("only down",counter) if debug==1
-        print "." if debug==1
         y=y-1
       else
 	     my_tmp_location=self.get_current_mouse_location(robot)
