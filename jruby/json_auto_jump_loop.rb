@@ -144,106 +144,59 @@ class Action
     end
   end
 
-  def move_mouse_to_target_like_human(robot,target_location)
-    myloc=[] 
-    myloc=get_current_mouse_location(robot)
-    mydebugger("move_mouse_to_target_like_human", "mouse location", myloc ) 
+  def move_to_target_pixel_like_human(robot,target_location,debug) 
+    x,y=get_current_mouse_location(robot)
+    mydebugger("move_to_target_pixel_like_human", "mouse location", [x,y] ) 
 
-    x=myloc[0]
-    y=myloc[1]
-
-    until myloc==target_location do
-    
-      #moving pointer up and left
-      if ( x > target_location[0] and y > target_location[1] )
-	    if ( x-10 > target_location[0] && y-10 > target_location[1]) 
-          #fast moving to up and left by 10 
-          x=x-10
-          y=y-10
-	    else
-          #slow moving to up and left by 1
-          x=x-1
-          y=y-1
-        end
-      #moving pointer down and right 
-      elsif ( x< target_location[0] and y < target_location[1] )
-        if ( x+10 > target_location[0] && y+10> target_location[1]) 
-         #fast moving down and right x 10
-         x=x+10
-         y=y+10
-	    else
-         #slow moving down and right
-         x=x+1
-         y=y+1
-        end
-      #moving pointer down and left 
-      elsif ( x> target_location[0] and y < target_location[1] )
-        if ( x-10 > target_location[0] && y+10> target_location[1]) 
-          #fast moving down and left by 10
-          x=x-10
-          y=y+10
-        else
-          #slow moving down and left
-          x=x-1
-          y=y+1
-        end
-      #moving pointer up and right
-      elsif ( x< target_location[0] and y > target_location[1] )
-        if ( x+10 > target_location[0] && y-10> target_location[1]) 
-          #fast moving up and right by 10
-          x=x+10
-          y=y-10
-	    else
-          #slow moving up and right by 1
-          x=x+1
-          y=y-1
-	    end
-      #move right only 
-      elsif ( x< target_location[0])
-        if ( x+10 > target_location[0] ) 
-          #+ #moving right by 10
-          x=x+10
-        else
-          #+ #moving right
-          x=x+1
-        end
-      #move left only 
-      elsif ( x> target_location[0])
-        if ( x-10 > target_location[0] ) 
-          #fast moving left by 10
-          x=x-10
-        else
-          #slow moving left 
-          x=x-1
-        end
-      #move up only 
-      elsif ( y< target_location[1])
-        if ( y+10 > target_location[1] ) 
-          #- #moving up by 10
-          y=y+10
-        else
-          #+ #moving up
-          y=y+1
-        end
-      #move down only 
-      elsif ( y> target_location[1])
-        if ( y-10 > target_location[1] ) 
-          #fast moving down by 10
-          y=y-10
-	      else
-          #slow moving down
-          y=y-1
-        end
+    counter=0
+    until [x,y]==target_location do   
+      if ( x > target_location[0] and y > target_location[1] ) #moving pointer up and left
+        counter=counter+1
+        animated_message("up and left",counter) if debug==1
+        x=x-1
+        y=y-1
+      elsif ( x< target_location[0] and y < target_location[1] ) #moving pointer down and right
+        counter=counter+1
+        animated_message("down and right",counter) if debug==1
+        x=x+1
+        y=y+1
+      elsif ( x> target_location[0] and y < target_location[1] ) #moving pointer down and left
+        counter=counter+1
+        animated_message("down and left",counter) if debug==1
+        x=x-1
+        y=y+1
+      elsif ( x< target_location[0] and y > target_location[1] ) #moving pointer up and right
+        counter=counter+1
+        animated_message("up and right",counter) if debug==1
+        x=x+1
+        y=y-1
+      elsif ( x< target_location[0]) #move right only
+        counter=counter+1
+        animated_message("only right",counter) if debug==1
+        x=x+1
+      elsif ( x> target_location[0]) #move left only
+        counter=counter+1
+        animated_message("only left",counter) if debug==1
+        x=x-1
+      elsif ( y< target_location[1]) #move up only 
+        counter=counter+1
+        animated_message("only up",counter) if debug==1
+        y=y+1
+      elsif ( y> target_location[1]) #move down only
+        counter=counter+1
+        animated_message("only down",counter) if debug==1
+        y=y-1
       else
-        my_tmp_location=self.get_current_mouse_location(robot)
-        self.mydebugger("move_mouse_to_target_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
-        robot.delay(10) 
-        return(1) 
+	     my_tmp_location=self.get_current_mouse_location(robot)
+	     self.mydebugger("move_to_target_pixel_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
+       robot.delay(1)
+       return(1)
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(1) 
+      robot.delay(0.1) #mouse move is based on loop (0.1 for faster)
     end #end of until loop
-  end #end function move_mouse_to_target_like_human
+  end #end function move_to_target_pixel_like_human
+end #end class
 
   def color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
@@ -374,12 +327,12 @@ def randomize_xy(target_location,debug=0)
   return new_target_location
 end
 
-def single_click(robot,target_location)
+def single_click(robot,target_location,debug)
    target=Action.new
 
    target_location=randomize_xy(target_location) 
 
-   target.move_mouse_to_target_like_human(robot,target_location)
+   target.move_mouse_to_target_like_human(robot,target_location,debug)
    delay=rand(150..200)
    robot.delay(delay)
 
@@ -390,11 +343,11 @@ def single_click(robot,target_location)
    robot.mouseRelease(InputEvent::BUTTON1_MASK)
 end
 
-def double_click(robot,target_location)
+def double_click(robot,target_location,debug)
   #moust double clicks require 2 clicks in 500ms or less
   target=Action.new
   target_location=randomize_xy(target_location)
-  target.move_mouse_to_target_like_human(robot,target_location)
+  target.move_mouse_to_target_like_human(robot,target_location,debug)
   delay=rand(120..160)
    for i in (1..2)
      robot.mousePress(InputEvent::BUTTON1_MASK)
@@ -430,18 +383,27 @@ end
 def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
   #move the pointer to the target location like a human before clicking 
   my_action=Action.new
-  my_action.speak("scanning for clickable target") if debug ==1 
-  target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
- 
-   if target_location != [0,0] and target_location != nil 
-      single_click(robot,target_location)
-      return "single clicked"
-   else
+  my_action.speak("scanning for clickable target") if debug ==1
+  target_location=[0,0] #empty location
+  counter=0
+
+  #scan until we find something or try three times
+  until counter=>3 or target_location !=[0,0] #scan 3 times before failing.
+    target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
+    counter=counter+1
+    robot.delay(500) #wait 1/2 seconds
+  end
+
+  if target_location != [0,0] and target_location != nil 
+    single_click(robot,target_location,debug)
+    return "single clicked"
+  else
     puts "error: we didn't find the #{search_element} or click"
+    my_action.speak("lost track of #{search_element}. Exiting.") 
     min,sec=(Time.now.to_i-my_start).divmod(60)
     puts "run time was #{min} mins #{sec} seconds"
     exit
-   end
+  end
 end
 
 def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
@@ -552,6 +514,7 @@ for i in 0 ... ARGV.length
   elsif ARGV[i].chomp =~ /-help/ or ARGV[i] =~ /\s+/ #need help
     puts "DEBUG3: 'help command received'" if debug==1
     help(command=$0,ship_align_secs)
+    exit
   else
     puts ""
   end
@@ -789,7 +752,7 @@ while in_space==1
           if session_change_wait ==0
             my_action.speak("stopping")  
             my_action.speak("pressing jump") 
-            single_click(robot,target_location=jump_button_bottom) #force single click
+            single_click(robot,target_location=jump_button_bottom,debug) #force single click
           end
           session_change_wait=session_change_wait+1
           my_action.speak("#{session_change_wait}") #if debug == 1
@@ -799,7 +762,7 @@ while in_space==1
              
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
             my_action.speak("jump again") if debug == 1
-            single_click(robot,target_location=jump_button_bottom) #force single click
+            single_click(robot,target_location=jump_button_bottom,debug) #force single click
           end           
         end
       end 
