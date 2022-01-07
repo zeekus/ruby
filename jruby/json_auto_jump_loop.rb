@@ -1,7 +1,9 @@
 #!/usr/bin/jruby
 #filename: json_auto_jump_loop.rb
 #description: moves ship from system to system until docking.
-#requirement - a location.json file needs to exist.
+#software requirements: openjdk1.8 and jruby 
+#other requirements - speech: espeak on Linux
+#required files: location.json file needs to exist.
 #location.json is created with  json_setup_screen_points.rb
 #overview requirements: stations and gates need to be visable and yellow
 #use: json_setup_screen_points.rb to setup json file holding buttons
@@ -11,6 +13,7 @@
 # * add in a subroutine to scan for the blue timer after a jump session finished. This will confirm we are cloaked and not moving.
 # * add a subroutine to change the camera orientation upon a scan failure. Ocassionally, glare can mess up the color detection. 
 # * pull in all accessory programs in to one logical program. json_setup_screen_points.rb json_test_setup.rb 
+# * create a readme.md that explains how to setup jruby and openjdk
 
 require 'java'
 require 'json'
