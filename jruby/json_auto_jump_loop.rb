@@ -144,9 +144,9 @@ class Action
     end
   end
 
-  def move_to_target_pixel_like_human(robot,target_location,debug) 
+  def move_mouse_to_target_like_human(robot,target_location,debug) 
     x,y=get_current_mouse_location(robot)
-    mydebugger("move_to_target_pixel_like_human", "mouse location", [x,y] ) 
+    mydebugger("move_mouse_to_target_like_human", "mouse location", [x,y] ) 
 
     counter=0
     until [x,y]==target_location do   
@@ -196,7 +196,7 @@ class Action
       robot.delay(0.1) #mouse move is based on loop (0.1 for faster)
     end #end of until loop
   end #end function move_to_target_pixel_like_human
-end #end class
+#end #end class
 
   def color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
@@ -282,9 +282,9 @@ end #end class
   def hit_the_button(robot,target_location,jump_count,message,debug)
     #Hit the press the jump button 
     if message =~ /j/i #jump button
-      my_message=double_click(robot,target_location) #jump double click
+      my_message=double_click(robot,target_location,debug) #jump double click
     else 
-      my_message=single_click(robot,target_location) #every thing else
+      my_message=single_click(robot,target_location,debug) #every thing else
     end
     #j for jump a for align 
     self.speak(message) if debug == 1
@@ -308,9 +308,9 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
    
    mydelay=rand(101..200)
    robot.delay(mydelay)
-   single_click(robot,target_location=micro_warpdrive)
+   single_click(robot,target_location=micro_warpdrive,debug)
    robot.delay(mydelay)
-   single_click(robot,target_location=cloaking_module)
+   single_click(robot,target_location=cloaking_module,debug)
 end
 
 def randomize_xy(target_location,debug=0)
@@ -388,7 +388,7 @@ def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_botto
   counter=0
 
   #scan until we find something or try three times
-  until counter=>3 or target_location !=[0,0] #scan 3 times before failing.
+  until counter>=3 or target_location !=[0,0] #scan 3 times before failing.
     target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     counter=counter+1
     robot.delay(500) #wait 1/2 seconds
@@ -413,8 +413,8 @@ def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
   are_we_moving="no"
   are_we_stopped="yes"
   until are_we_moving == "yes" and are_we_stopped == "no"
-    are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map)
-    are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map)
+    are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map,debug)
+    are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map,debug)
     my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
     puts "waiting to speeding up..."
   end
@@ -580,7 +580,7 @@ while in_space==1
   if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
     robot.delay(500)  #1/2 second delay
     my_action.speak("go 0 single click") if debug == 1
-    single_click(robot,ref_point) #click on center of screen 
+    single_click(robot,ref_point,debug) #click on center of screen 
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
     puts "We #{my_message} on our destination."
@@ -777,7 +777,7 @@ while in_space==1
     wait_count =0 
     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-    single_click(robot,ref_point) #move mouse to see the buttons 
+    single_click(robot,ref_point,debug) #move mouse to see the buttons 
 
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") if debug == 1 
