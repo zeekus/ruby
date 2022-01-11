@@ -314,12 +314,16 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
      my_action=Action.new
      my_action.speak("cloaking")
    end
-   
-   mydelay=rand(101..200)
-   robot.delay(mydelay)
-   single_click(robot,target_location=micro_warpdrive,debug)
+
+   #Cloak Trick
+   mydelay=rand(200..300)
    robot.delay(mydelay)
    single_click(robot,target_location=cloaking_module,debug)
+   
+   mydelay=rand(150..200)
+   robot.delay(mydelay)
+   single_click(robot,target_location=micro_warpdrive,debug)
+
 end
 
 def randomize_xy(target_location,debug=0)
