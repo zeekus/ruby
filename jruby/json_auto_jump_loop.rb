@@ -650,7 +650,7 @@ while in_space==1
     end
  
     #pressing warpto button
-    warp_count=my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
+    warp_count=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
     my_action.speak("warp #{warp_count}")
     warp_button_pressed=1
 
@@ -663,7 +663,7 @@ while in_space==1
       my_action.speak("in warp")
     else 
       my_action.speak("we appear to have missed a warp. Trying again.")
-      null=my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
+      null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
     end 
 
     if jump_count==1
@@ -697,7 +697,7 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
+        my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
         wait_count=0 #reset wait count
        else 
         print "." #status bar like effect
