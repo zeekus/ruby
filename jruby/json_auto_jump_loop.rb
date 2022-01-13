@@ -62,7 +62,7 @@ class LogParser
     end
   end
   
-  def log_reader(debug,target_phrase,log_size,sec_threshold)
+  def log_reader(debug=1,target_phrase,log_size,sec_threshold)
     if debug ==1
      puts "debug is #{debug}"
      puts "target_phrase is #{target_phrase}"
@@ -115,6 +115,7 @@ class LogParser
           count = count + 1
         end
         result=is_log_string_current(debug,line.chomp,sec_threshold) #current log entry only
+        puts "debug log_reader result is #{result}" if debug==1
         if line =~ /#{target_phrase}/i  and result==1
            if target_phrase =~ /Jumping/i or target_phrase =~ /Undocking/i 
             capture_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
@@ -165,43 +166,43 @@ class Action
     until [x,y]==target_location do   
       if ( x > target_location[0] and y > target_location[1] ) #moving pointer up and left
         counter=counter+1
-        animated_message("up and left",counter) if debug==1
+        puts ("up and left #{counter}") if debug==1
         x=x-1
         y=y-1
       elsif ( x< target_location[0] and y < target_location[1] ) #moving pointer down and right
         counter=counter+1
-        animated_message("down and right",counter) if debug==1
+        puts ("down and right #{counter}") if debug==1
         x=x+1
         y=y+1
       elsif ( x> target_location[0] and y < target_location[1] ) #moving pointer down and left
         counter=counter+1
-        animated_message("down and left",counter) if debug==1
+        puts ("down and left #{counter}") if debug==1
         x=x-1
         y=y+1
       elsif ( x< target_location[0] and y > target_location[1] ) #moving pointer up and right
         counter=counter+1
-        animated_message("up and right",counter) if debug==1
+        puts ("up and right #{counter}") if debug==1
         x=x+1
         y=y-1
       elsif ( x< target_location[0]) #move right only
         counter=counter+1
-        animated_message("only right",counter) if debug==1
+        puts ("only right #{counter}") if debug==1
         x=x+1
       elsif ( x> target_location[0]) #move left only
         counter=counter+1
-        animated_message("only left",counter) if debug==1
+        puts ("only left #{counter}") if debug==1
         x=x-1
       elsif ( y< target_location[1]) #move up only 
         counter=counter+1
-        animated_message("only up",counter) if debug==1
+        puts ("only up #{counter}") if debug==1
         y=y+1
       elsif ( y> target_location[1]) #move down only
         counter=counter+1
-        animated_message("only down",counter) if debug==1
+        puts ("only down #{counter}") if debug==1
         y=y-1
       else
-	     my_tmp_location=self.get_current_mouse_location(robot)
-	     self.mydebugger("move_to_target_pixel_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
+       my_tmp_location=self.get_current_mouse_location(robot)
+       self.mydebugger("move_to_target_pixel_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
        robot.delay(1)
        return(1)
       end #end if
@@ -657,18 +658,18 @@ while in_space==1
     #check logs for this message
     #double clicks generate this text #(notify) You cannot do that while warping.
 
-    my_string=my_logger.log_reader(debug=1,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
-    puts "2 - double clicked warpto button twice '#{my_string}'" if my_string != ""
+    my_string=my_logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
+    puts "2 - double clicked warpto button twice '#{my_string.to_s}'" if my_string != ""
 
     warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
-    if my_string =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
-      my_action.speak("in warp button #{warp_to_visable} and string #{my_string}")
+    if my_string.to_s =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
+      my_action.speak("in warp button #{warp_to_visable} and string #{my_string.to_s}")
     else 
       my_action.speak("we appear to have missed a warp. Trying again.")
       null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
     end 
 
-    if jump_count==1
+    if warp_count==1
       robot.delay(7000) #10 second delay near station
     else
       robot.delay(500) #1/2 second delay
@@ -678,7 +679,7 @@ while in_space==1
   #################
   #SEQ 2: ship should be speeding up blue bar filling
   #################
-  if jump_button_pressed ==1
+  if warp_button_pressed ==1
     my_action.speak("go 2 advance") if debug ==1
 
     #######################################################
@@ -735,10 +736,10 @@ while in_space==1
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
       #scan logs for a session change
-      my_jump_string=my_logger.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+      my_jump_string=my_logger.log_reader(debug,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
       puts "3 - jumping - '#{my_jump_string.to_s}'" if my_jump_string != ""
 
-      my_docking_string=my_logger.log_reader(debug=0,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+      my_docking_string=my_logger.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
       puts "4 - docking - '#{my_docking_string.to_s}'" if my_docking_string != ""
  
       if ( my_jump_string =~ /jumping/i )
@@ -753,8 +754,8 @@ while in_space==1
       elsif ( icon_is_visable=="no" and are_we_moving =="no")
         #check log again for a jump
         robot.delay(2000) #wait 2 secs
-        my_jump_string=my_logger.log_reader(debug=0,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
-        my_docking_string=my_logger.log_reader(debug=0,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+        my_jump_string=my_logger.log_reader(debug,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
+        my_docking_string=my_logger.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
         if my_jump_string != ""
           my_action.speak("2 #{my_jump_string}") #speak jump string from log
         elsif  my_docking_string =~ /docking/i
@@ -779,7 +780,7 @@ while in_space==1
             jbutton_seq=jbutton_seq+1
           end
           session_change_wait=session_change_wait+1
-          my_action.speak("#{session_change_wait}") #if debug == 1
+          my_action.speak("#{session_change_wait}") if debug == 1
           
           icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
           robot.delay(100)
