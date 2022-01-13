@@ -657,10 +657,12 @@ while in_space==1
     #check logs for this message
     #double clicks generate this text #(notify) You cannot do that while warping.
 
-    my_string= my_logger.log_reader(debug=0,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
+    my_string=my_logger.log_reader(debug=1,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
     puts "2 - double clicked warpto button twice '#{my_string}'" if my_string != ""
-    if my_string =~ /warp/i
-      my_action.speak("in warp")
+
+    warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+    if my_string =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
+      my_action.speak("in warp button #{warp_to_visable} and string #{my_string}")
     else 
       my_action.speak("we appear to have missed a warp. Trying again.")
       null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
