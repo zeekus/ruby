@@ -815,9 +815,9 @@ while in_space==1
      end
     end
     puts "" #new line
-    
   end
-  
+  robt.delay(1000) #added one second delay for session refresh
+
 end  
 
 
