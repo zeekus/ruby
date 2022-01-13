@@ -15,6 +15,10 @@
 # * pull in all accessory programs in to one logical program. json_setup_screen_points.rb json_test_setup.rb 
 # * create a readme.md that explains how to setup jruby and openjdk
 
+#known issues
+#1. cloaking is hit and miss. We need something to double check cloak is active. - scan for cloak icon. 
+#2. ocassionally we are getting hung up on gates. How can we get around this ? 
+
 require 'java'
 require 'json'
 require 'time'
@@ -290,10 +294,10 @@ class Action
 
   def hit_the_button(robot,target_location,jump_count,message,debug)
     #Hit the press the jump button 
-    if message =~ /j/i #jump button
-      my_message=double_click(robot,target_location,debug) #jump double click
+    if message =~ /j/i or message =~ /a/i #jump button or align button gets double click
+      my_message=double_click(robot,target_location,debug) #double click
     else 
-      my_message=single_click(robot,target_location,debug) #every thing else
+      my_message=single_click(robot,target_location,debug) #every thing else gets single click
     end
     #j for jump a for align 
     self.speak(message) if debug == 1
