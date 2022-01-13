@@ -292,20 +292,20 @@ class Action
    return my_color
   end
 
-  def hit_the_button(robot,target_location,jump_count,message,debug)
+  def hit_the_button(robot,target_location,mycount,message,debug)
     #Hit the press the jump button 
-    if message =~ /j/i or message =~ /a/i #jump button or align button gets double click
+    if message =~ /j/i or message =~ /a/i or message =~ /w/i #jump,align,or warpto button gets double click
       my_message=double_click(robot,target_location,debug) #double click
     else 
       my_message=single_click(robot,target_location,debug) #every thing else gets single click
     end
     #j for jump a for align 
     self.speak(message) if debug == 1
-    puts "We #{my_message} on warp_to_top." if debug==1
-    jump_count = jump_count + 1
-    puts "jump count is #{jump_count}. We are in warp..."
+    puts "We clicked #{my_message}" if debug==1
+    mycount = mycount + 1
+    puts "count is #{mycount}. We pressed #{message}"
     
-    return jump_count
+    return mycount
   end
 
 end #end class
@@ -501,6 +501,7 @@ rgb_color_map={
 destination_selected=0  #status of yellow selection
 in_space=1              #status of ship - always 1
 jump_count = 0          #counter for jumps   
+warp_count = 0          #counter for warps
 icon_is_visable="no"    #status of icon on right of screen
 are_we_moving="no"      #status of ship blue check
 are_we_stopped="yes"    #status of ship grey check 
@@ -630,6 +631,7 @@ while in_space==1
 
   start_jump_count=jump_count
   jump_button_pressed=0
+  warp_button_pressed=0
   ###################
   #SEQ: 1. hit jump button
   ###################
@@ -647,10 +649,10 @@ while in_space==1
       robot.delay(1000) #short delay for non cloaking ship
     end
  
-    jump_count=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
-
-    my_action.speak("jump #{jump_count}")
-    jump_button_pressed=1
+    #pressing warpto button
+    warp_count=my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
+    my_action.speak("warp #{warp_count}")
+    warp_button_pressed=1
 
     #check logs for this message
     #double clicks generate this text #(notify) You cannot do that while warping.
@@ -661,7 +663,7 @@ while in_space==1
       my_action.speak("in warp")
     else 
       my_action.speak("we appear to have missed a warp. Trying again.")
-      null=my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
+      null=my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
     end 
 
     if jump_count==1
@@ -695,7 +697,7 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        my_action.hit_the_button(robot,target_location=jump_button_top,jump_count,message="j",debug)
+        my_action.hit_the_button(robot,target_location=warp_button_top,warp_count,message="w",debug)
         wait_count=0 #reset wait count
        else 
         print "." #status bar like effect
@@ -719,6 +721,7 @@ while in_space==1
     wait_count =0
     my_jump_click_again = 0 # work around for stuck gates 
     session_change_wait=0
+    jbutton_seq=0
     until jump_seq_complete==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
@@ -768,8 +771,10 @@ while in_space==1
         if icon_is_visable=="yes" and are_we_moving=="no"
           if session_change_wait ==0
             my_action.speak("stopping")  
-            my_action.speak("pressing jump") 
+            my_action.speak("pressing jump button #1") 
             single_click(robot,target_location=jump_button_bottom,debug) #force single click
+            jump_count=jump_count+1
+            jbutton_seq=jbutton_seq+1
           end
           session_change_wait=session_change_wait+1
           my_action.speak("#{session_change_wait}") #if debug == 1
@@ -778,14 +783,15 @@ while in_space==1
           robot.delay(100)
              
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
-            my_action.speak("jump again") if debug == 1
             single_click(robot,target_location=jump_button_bottom,debug) #force single click
+            jbutton_seq=jbutton_seq+1
+            my_action.speak("jump again #{jbutton_seq}") # if debug == 1
           end           
         end
       end 
     end
     mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
-    puts "in warp time was #{mins} minutes ,#{secs} seconds"
+    puts "in warp time was #{mins} minutes #{secs} seconds"
 
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
@@ -816,7 +822,7 @@ while in_space==1
     end
     puts "" #new line
   end
-  robt.delay(1000) #added one second delay for session refresh
+  robot.delay(1000) #added one second delay for session refresh
 
 end  
 
