@@ -18,6 +18,8 @@
 #known issues
 #1. cloaking is hit and miss. We need something to double check cloak is active. - scan for cloak icon. 
 #2. ocassionally we are getting hung up on gates. How can we get around this ? 
+#last commit before rewrite - https://github.com/zeekus/ruby/commit/ea1a19f9252d92f6d893bbb120cd401536484adc
+# new issues: logic became unstable with warp to introduction. 
 
 require 'java'
 require 'json'
@@ -424,26 +426,6 @@ def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_botto
   end
 end
 
-def wait_until_we_are_moving(robot,speed_top,speed_bottom,rgb_color_map,debug)
-  wait_until_we_are_moving_start_time=Time.now.to_i #get time in secs
-  my_action=Action.new
-  my_action.speak("waiting on movement") if debug==1
-  are_we_moving="no"
-  are_we_stopped="yes"
-  until are_we_moving == "yes" and are_we_stopped == "no"
-    are_we_moving  = check_non_clickable(robot,"blue_speed",speed_top,speed_bottom,rgb_color_map,debug)
-    are_we_stopped = check_non_clickable(robot,"grey_speed",speed_top,speed_bottom,rgb_color_map,debug)
-    my_action.speak("fast_blue #{are_we_moving} grey_speed #{are_we_stopped} ") if debug==1
-    puts "waiting to speeding up..."
-  end
- 
-  mins,secs = (Time.now.to_i-wait_until_we_are_moving_start_time).divmod(60) # convert runtime to minutes and seconds
-  my_action.speak("movement detected in #{secs} seconds")
-  return "yes" #results 
-  
-end
-
-
 
 ###################################################
 #Future - todo - the color map should be put in a json file
@@ -588,7 +570,7 @@ my_start=Time.now.to_i #runtime start
 
 while in_space==1 
 
-  #check for icon - needed to find the yellow icon
+  #check for icon - needed to find the yellow icon after each run
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug) 
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
 
@@ -596,7 +578,7 @@ while in_space==1
   #SEQ 0: prerequisite - select the yellow destination icon
   #issues this disappears sometimes at random intervals. 
   ###########################################
-  if destination_selected == 0 or icon_is_visable =="no" # only need this once to set state
+  if destination_selected == 0 or icon_is_visable =="no" # need yellow icon selected for things to work. 
     robot.delay(500)  #1/2 second delay
     my_action.speak("go 0 single click") if debug == 1
     single_click(robot,ref_point,debug) #click on center of screen 
@@ -611,30 +593,19 @@ while in_space==1
   are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
   my_action.speak("L1 grey stopped #{are_we_stopped}") if debug==1
 
-  #check for blue 
+  #check for blue - movement
   are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
   my_action.speak("L2 blue moving #{are_we_moving}") if debug==1
 
-  #check for icon
+  #check for icon - again 
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
-
-  # if debug ==1 #debug icon search 
-  #   if icon_is_visable == "yes"
-  #     icon_found_count=icon_found_count+1
-  #     puts "testing: we see the icon and saw it #{icon_found_count} times"
-  #   else
-  #     icon_notfound_count=icon_notfound_count+1
-  #     puts "testing: we *** do not *** see the icon. Miss count is #{icon_notfound_count}"
-  #   end
-  #   robot.delay(500)  #1/2 second delay
-  # end
 
   start_jump_count=jump_count
   jump_button_pressed=0
   warp_button_pressed=0
   ###################
-  #SEQ: 1. hit jump button
+  #SEQ: 1. hit warpto button
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
@@ -650,42 +621,41 @@ while in_space==1
       robot.delay(1000) #short delay for non cloaking ship
     end
  
+    #########################
     #pressing warpto button
+    #########################
+    
     warp_count=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
     my_action.speak("warp #{warp_count}")
     warp_button_pressed=1
     
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
     double_click(robot,ref_point,debug) #click on center of screen 
+    robot.delay(500) #1/2 sec delay for log entry to appear
 
     my_string=my_logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
-    puts "2 - string is '#{my_string.to_s}'" if my_string != ""
+    puts "2 - string is '#{my_string.to_s}'" if my_string != "" or my_string != null 
 
-    #check icons
+    #check icons again - the warp to icon should have disappeared
     warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
 
     if my_string.to_s =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
       my_action.speak("in warp button #{warp_to_visable} and string #{my_string.to_s}")
     else 
       my_action.speak("we appear to have missed a warp button.")
-      warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
-      if warp_to_visable == "yes"
+      warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #double check 
+      if warp_to_visable == "yes" 
         my_action.speak("Trying again.")
-        null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+        null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug) #second try
       else
         my_action.speak("Disrgard warning. We are warping.")
       end
     end 
 
-    if warp_count==1
-      robot.delay(7000) #10 second delay near station
-    else
-      robot.delay(500) #1/2 second delay
-    end
   end
 
   #################
-  #SEQ 2: ship should be speeding up blue bar filling
+  #SEQ 2: ship should be speeding up: blue bar filling
   #################
   if warp_button_pressed ==1
     my_action.speak("go 2 advance") if debug ==1
@@ -701,7 +671,6 @@ while in_space==1
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-       #are_we_stopped = check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
        robot.delay(500)  #1/2 second delay
                         
@@ -709,8 +678,8 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        #check icons
-        warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+        
+        warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
         if warp_to_visable =="yes"
           my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
         else
@@ -720,8 +689,6 @@ while in_space==1
        else 
         print "." #status bar like effect
        end
-
-
     end
     
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
@@ -732,7 +699,6 @@ while in_space==1
     #SEQ 3. waiting for jump completion
     ###################
     my_action.speak("go 3 waiting for jump") if debug ==1
-    jump_seq_complete=0
     in_hyper_jump=Time.now.to_i #get time in secs
     #######################################################
     #problem area - logs are not always working/reliable. 
@@ -742,6 +708,7 @@ while in_space==1
     my_jump_click_again = 0 # work around for stuck gates 
     session_change_wait=0
     jbutton_seq=0
+    jump_seq_complete=0
     until jump_seq_complete==1
       robot.delay(500)  #1/2 second delay
       wait_count=wait_count+1
