@@ -300,7 +300,7 @@ class Action
     if message =~ /j/i or message =~ /a/i or message =~ /w/i #jump,align,or warpto button gets double click
       my_message=double_click(robot,target_location,debug) #double click
     else 
-      my_message=single_click(robot,target_location,debug) #every thing else gets single click
+      my_message=single_click(robot,target_location,debug,randomize=1) #every thing else gets single click
     end
     #j for jump a for align 
     self.speak(message) if debug == 1
@@ -325,11 +325,11 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
    #Cloak Trick
    mydelay=rand(200..300)
    robot.delay(mydelay)
-   single_click(robot,target_location=cloaking_module,debug)
+   single_click(robot,target_location=cloaking_module,debug,randomize=1)
    
    mydelay=rand(150..200)
    robot.delay(mydelay)
-   single_click(robot,target_location=micro_warpdrive,debug)
+   single_click(robot,target_location=micro_warpdrive,debug,randomize=1)
 
 end
 
@@ -347,10 +347,10 @@ def randomize_xy(target_location,debug=0)
   return new_target_location
 end
 
-def single_click(robot,target_location,debug)
+def single_click(robot,target_location,debug,randomize)
    target=Action.new
 
-   target_location=randomize_xy(target_location) 
+   target_location=randomize_xy(target_location) if randomize==1
 
    target.move_mouse_to_target_like_human(robot,target_location,debug)
    delay=rand(150..200)
@@ -400,7 +400,7 @@ def check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_col
   end
 end
 
-def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
+def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_bottom_xy,rgb_color_map,debug,randomize) 
   #move the pointer to the target location like a human before clicking 
   my_action=Action.new
   my_action.speak("scanning for clickable target") if debug ==1
@@ -415,7 +415,7 @@ def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_botto
   end
 
   if target_location != [0,0] and target_location != nil 
-    single_click(robot,target_location,debug)
+    single_click(robot,target_location,debug,randomize)
     return "single clicked"
   else
     puts "error: we didn't find the #{search_element} or click"
@@ -581,10 +581,12 @@ while in_space==1
   if destination_selected == 0 or icon_is_visable =="no" # need yellow icon selected for things to work. 
     robot.delay(500)  #1/2 second delay
     my_action.speak("go 0 single click") if debug == 1
-    single_click(robot,ref_point,debug) #click on center of screen 
+    single_click(robot,ref_point,debug,randomize=0) #click on center of screen 
     #check and click on the yellow destination marker
-    my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
+    my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
     puts "We #{my_message} on our destination."
+    my_action.speak("destination selected")
+    robot.delay(2000) #2 second delay after selecting the destination - order refresh workaround
     destination_selected=1
     my_action.speak("go 0 destination selected") if debug ==1
   end
@@ -609,7 +611,7 @@ while in_space==1
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
-    my_action.speak("go 1 jump") if debug ==1
+    my_action.speak("go 1 warp") if debug ==1
     if cloaking_ship == 1
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
@@ -624,23 +626,27 @@ while in_space==1
     #########################
     #pressing warpto button
     #########################
-    
     warp_count=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
-    my_action.speak("warp #{warp_count}")
+    my_action.speak(" warp #{warp_count}")
     warp_button_pressed=1
-    
+    robot.delay(3000) if warp_count ==1 #near station delay 
+
+
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
     double_click(robot,ref_point,debug) #click on center of screen 
     robot.delay(500) #1/2 sec delay for log entry to appear
 
     my_string=my_logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
-    puts "2 - string is '#{my_string.to_s}'" if my_string != "" or my_string != null 
+    if my_string != "" or my_string.length > 1
+      puts "2 - string is '#{my_string.to_s}'"  
+      my_action.speak("logger string is #{my_string.to_s}")
+    end
 
     #check icons again - the warp to icon should have disappeared
     warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
 
     if my_string.to_s =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
-      my_action.speak("in warp button #{warp_to_visable} and string #{my_string.to_s}")
+      my_action.speak("in warp")
     else 
       my_action.speak("we appear to have missed a warp button.")
       warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #double check 
@@ -677,7 +683,7 @@ while in_space==1
        if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
-        my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
+        my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
         
         warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
         if warp_to_visable =="yes"
@@ -759,7 +765,7 @@ while in_space==1
           if session_change_wait ==0
             my_action.speak("stopping")  
             my_action.speak("pressing jump button #1") 
-            single_click(robot,target_location=jump_button_bottom,debug) #force single click
+            single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jump_count=jump_count+1
             jbutton_seq=jbutton_seq+1
           end
@@ -770,7 +776,7 @@ while in_space==1
           robot.delay(100)
              
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
-            single_click(robot,target_location=jump_button_bottom,debug) #force single click
+            single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jbutton_seq=jbutton_seq+1
             my_action.speak("jump again #{jbutton_seq}") # if debug == 1
           end           
@@ -787,7 +793,7 @@ while in_space==1
     wait_count =0 
     jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
     icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-    single_click(robot,ref_point,debug) #move mouse to see the buttons 
+    single_click(robot,ref_point,debug,randomize=1) #move mouse to see the buttons 
 
     until icon_is_visable=="yes" and jump_button_visable=="yes"
      my_action.speak("go 4 refresh") if debug == 1 
@@ -803,7 +809,7 @@ while in_space==1
        puts" lost white icon or jump_button: we should click on the yellow icon again."
        #check and click on the destination indicator
        my_action.speak("go 4B lost track of the gate. jump_button visible #{jump_button_visable} icon visible #{icon_is_visable}") 
-       my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
+       my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
        wait_count=0 #reset wait count
      end
     end
