@@ -654,19 +654,27 @@ while in_space==1
     warp_count=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
     my_action.speak("warp #{warp_count}")
     warp_button_pressed=1
-
-    #check logs for this message
-    #double clicks generate this text #(notify) You cannot do that while warping.
+    
+    #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
+    double_click(robot,ref_point,debug) #click on center of screen 
 
     my_string=my_logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
-    puts "2 - double clicked warpto button twice '#{my_string.to_s}'" if my_string != ""
+    puts "2 - string is '#{my_string.to_s}'" if my_string != ""
 
+    #check icons
     warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+
     if my_string.to_s =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
       my_action.speak("in warp button #{warp_to_visable} and string #{my_string.to_s}")
     else 
-      my_action.speak("we appear to have missed a warp. Trying again.")
-      null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+      my_action.speak("we appear to have missed a warp button.")
+      warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+      if warp_to_visable == "yes"
+        my_action.speak("Trying again.")
+        null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+      else
+        my_action.speak("Disrgard warning. We are warping.")
+      end
     end 
 
     if warp_count==1
@@ -688,6 +696,7 @@ while in_space==1
     wait_count =0
 
     align_time_start=Time.now.to_i #get time in secs
+
     
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
@@ -700,11 +709,19 @@ while in_space==1
         my_action.speak("acceleration overwait warning") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug)
-        my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+        #check icons
+        warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+        if warp_to_visable =="yes"
+          my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+        else
+          my_action.hit_the_button(robot,target_location=jump_button_top,warp_count,message="j",debug)
+        end
         wait_count=0 #reset wait count
        else 
         print "." #status bar like effect
        end
+
+
     end
     
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
