@@ -765,6 +765,8 @@ while in_space==1
           if session_change_wait ==0
             my_action.speak("stopping")  
             my_action.speak("pressing jump button #1") 
+            #get yellow icon again
+            my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
             single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jump_count=jump_count+1
             jbutton_seq=jbutton_seq+1
@@ -776,6 +778,7 @@ while in_space==1
           robot.delay(100)
              
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
+            my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
             single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jbutton_seq=jbutton_seq+1
             my_action.speak("jump again #{jbutton_seq}") # if debug == 1
