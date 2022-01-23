@@ -411,7 +411,7 @@ def check_clickable(robot,my_start,search_element,clicks,left_top_xy,right_botto
   until counter>=3 or target_location !=[0,0] #scan 3 times before failing.
     target_location=my_action.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     counter=counter+1
-    robot.delay(500) #wait 1/2 seconds
+    robot.delay(1500) #wait 1.5 seconds
   end
 
   if target_location != [0,0] and target_location != nil 
