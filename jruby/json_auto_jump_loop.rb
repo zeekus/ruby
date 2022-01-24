@@ -333,6 +333,15 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
 
 end
 
+def randomize_button(top,bot)
+  #we return back a random location between two positons. 
+  xtop,ytop=top
+  xbot,ybot=bot
+  x=rand(xtop..xbot)
+  y=rand(ytop..ybot)
+  return x,y
+end
+
 def randomize_xy(target_location,debug=0)
   puts "single click - original location #{target_location}" if debug == 1
   #randomize target location a tiny bit so we are not an obvious
@@ -570,6 +579,10 @@ my_start=Time.now.to_i #runtime start
 
 while in_space==1 
 
+  align_button=randomize_button(align_to_top,align_to_bottom)
+  warp_button=randomize_button(warp_to_top,warp_to_bottom)
+  jump_button=randomize_button(jump_button_top,jump_button_bottom)
+
   #check for icon - needed to find the yellow icon after each run
   icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug) 
   my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
@@ -614,7 +627,7 @@ while in_space==1
     my_action.speak("go 1 warp") if debug ==1
     if cloaking_ship == 1
       puts "hit the align button"
-      my_action.hit_the_button(robot,target_location=align_to_top,jump_count,message="a",debug)
+      my_action.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
       if jump_count > 0 #only cloak when on second jump to avoid stations.
         puts "cloaking routine"
         cloak_ship(robot,cloaking_module,microwarp_module,debug)
@@ -626,7 +639,7 @@ while in_space==1
     #########################
     #pressing warpto button
     #########################
-    warp_count=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+    warp_count=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
     my_action.speak(" warp #{warp_count}")
     warp_button_pressed=1
     robot.delay(3000) if warp_count ==1 #near station delay 
@@ -652,7 +665,7 @@ while in_space==1
       warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #double check 
       if warp_to_visable == "yes" 
         my_action.speak("Trying again.")
-        null=my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug) #second try
+        null=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug) #second try
       else
         my_action.speak("Disrgard warning. We are warping.")
       end
@@ -687,9 +700,9 @@ while in_space==1
         
         warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
         if warp_to_visable =="yes"
-          my_action.hit_the_button(robot,target_location=warp_to_top,warp_count,message="w",debug)
+          my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
         else
-          my_action.hit_the_button(robot,target_location=jump_button_top,warp_count,message="j",debug)
+          my_action.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
         end
         wait_count=0 #reset wait count
        else 
@@ -767,7 +780,7 @@ while in_space==1
             my_action.speak("pressing jump button #1") 
             #get yellow icon again
             my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
-            single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
+            single_click(robot,target_location=jump_button,debug,randomize=1) #force single click
             jump_count=jump_count+1
             jbutton_seq=jbutton_seq+1
           end
@@ -802,7 +815,7 @@ while in_space==1
      my_action.speak("go 4 refresh") if debug == 1 
      print "refresh pause:" if wait_count==0
      print "."
-     robot.delay(250)  #1/2 second delay 
+     robot.delay(500)  #1/2 second delay 
      wait_count=wait_count+1
      icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
      jump_button_visable = check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
@@ -818,7 +831,7 @@ while in_space==1
     end
     puts "" #new line
   end
-  robot.delay(1000) #added one second delay for session refresh
+  robot.delay(1500) #added 1.5 second delay for session refresh
 
 end  
 
