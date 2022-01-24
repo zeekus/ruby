@@ -333,10 +333,34 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
 
 end
 
-def randomize_button(top,bot)
+def micro_warpdrive_cloak_trick ( robot,cloaking_module,micro_warpdrive,align_button,warp_button,debug=1)
+
+  if debug==1
+    my_action=Action.new
+    my_action.speak("mwd cloaking")
+  end
+
+  #align pressed earlier
+  robot.delay(500)
+  double_click(robot,micro_warpdrive,debug) #click mwd
+
+  robot.delay(700)
+  double_click(robot,cloaking_module,debug) #click cloaker
+
+  #wait 5
+  robot.delay(5000)
+
+  #click cloak
+  double_click(robot,cloaking_module,debug) #click cloaker
+
+  #click jump or warp to
+  double_click(robot,warp_button,debug)
+end
+
+def randomize_button(top,bottom)
   #we return back a random location between two positons. 
   xtop,ytop=top
-  xbot,ybot=bot
+  xbot,ybot=bottom
   x=rand(xtop..xbot)
   y=rand(ytop..ybot)
   return x,y
@@ -630,7 +654,8 @@ while in_space==1
       my_action.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
       if jump_count > 0 #only cloak when on second jump to avoid stations.
         puts "cloaking routine"
-        cloak_ship(robot,cloaking_module,microwarp_module,debug)
+        micro_warpdrive_cloak_trick(robot,cloaking_module,micro_warpdrive,align_button,warp_button,debug)
+        #cloak_ship(robot,cloaking_module,microwarp_module,debug)
       end
     else
       robot.delay(1000) #short delay for non cloaking ship
