@@ -5,9 +5,18 @@
 
 debug=1
 
+mappings={
+   "f" => 3,
+   "ft" => 5,
+   'st' => 10,
+   'b'  => 20,
+}
+
 def help()
     puts "help was called"
 end
+
+ARGV << '-help' if ARGV.empty?
 
 puts "length of the 'ARGV' array is: " + ARGV.length.to_s  if debug==1
 

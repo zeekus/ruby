@@ -529,14 +529,16 @@ ship_align_time=ship_align_secs["h"] #hauler is the default with a 20 second ali
 
 def help(command,ship_align_secs)
   puts "help was called"
-  puts "#{command} use: -c -s:t for cloaking transport"
-  puts "#{command} use: -s:cr for cruiser with no cloak"
-  puts "ship types defined:"
+  puts "use: #{command}  -c -s:t #for cloaking transport"
+  puts "use: #{command}  -s:cr   #for cruiser with no cloak 15 second align time"
+  puts "ship types and align time defined:"
   for key,values in ship_align_secs
-    print key + ", "
+    printf "... key %2s tranlates to %2s seconds.\n" % [ key,values] 
+    #print ", " if values != ship_align_secs.values.to_a.last #only add comma if not last element
   end
 end
 
+ARGV << '-help' if ARGV.empty? #default set to help
 puts "length of the 'ARGV' array is: " + ARGV.length.to_s  if debug==1
 
 for i in 0 ... ARGV.length
