@@ -656,7 +656,7 @@ while in_space==1
       my_action.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
       if jump_count > 0 #only cloak when on second jump to avoid stations.
         puts "cloaking routine"
-        micro_warpdrive_cloak_trick(robot,cloaking_module,micro_warpdrive,align_button,warp_button,debug)
+        micro_warpdrive_cloak_trick(robot,cloaking_module,microwarp_module,align_button,warp_button,debug)
         #cloak_ship(robot,cloaking_module,microwarp_module,debug)
       end
     else
