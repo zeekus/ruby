@@ -322,14 +322,13 @@ def cloak_ship(robot,cloaking_module,micro_warpdrive,debug)
      my_action.speak("cloaking")
    end
 
-   #Cloak Trick
-   mydelay=rand(200..300)
-   robot.delay(mydelay)
+  #  #mwd module on
+  #  robot.delay(rand(200..300))
+  #  single_click(robot,target_location=micro_warpdrive,debug,randomize=1)
+
+   #covert ops cloak on 
+   robot.delay(rand(300..400))
    single_click(robot,target_location=cloaking_module,debug,randomize=1)
-   
-   mydelay=rand(150..200)
-   robot.delay(mydelay)
-   single_click(robot,target_location=micro_warpdrive,debug,randomize=1)
 
 end
 
@@ -340,15 +339,17 @@ def micro_warpdrive_cloak_trick ( robot,cloaking_module,micro_warpdrive,align_bu
     my_action.speak("mwd cloaking")
   end
 
+  puts "mwd cloaking"
+
   #align pressed earlier
-  robot.delay(500)
+  robot.delay(rand(550..700))
   double_click(robot,micro_warpdrive,debug) #click mwd
 
-  robot.delay(700)
+  robot.delay(rand(550..700))
   double_click(robot,cloaking_module,debug) #click cloaker
 
   #wait 5
-  robot.delay(5000)
+  robot.delay(rand(4000..5000))
 
   #click cloak
   double_click(robot,cloaking_module,debug) #click cloaker
@@ -524,12 +525,13 @@ are_we_stopped="yes"    #status of ship grey check
 icon_found_count=0      #counter for stats
 icon_notfound_count=0   #counter for icon misses
 debug=0                #espeak gets chatty with debug =1 
-cloaking_ship=0
+cloak_type=0
 ship_align_time=ship_align_secs["h"] #hauler is the default with a 20 second align time
 
 def help(command,ship_align_secs)
   puts "help was called"
-  puts "use: #{command}  -c -s:t #for cloaking transport"
+  puts "use: #{command}  -c -s:t #for cloaking transport with standard covert ops"
+  puts "use: #{command}  -ct -s:t #for cloaking transport with cloak trick"
   puts "use: #{command}  -s:cr   #for cruiser with no cloak 15 second align time"
   puts "ship types and align time defined:"
   for key,values in ship_align_secs
@@ -558,10 +560,16 @@ end
 
 for string in ARGV
  puts "You typed `#{string}` as your argument(s)." if debug==1
- if string =~ /-c/
-  cloaking_ship=1
-  puts "cloaking is enabled"
+ if string =~ /-ct/
+  cloak_type=2
+  puts "cloak trick enabled"
+ elsif string =~ /-c/
+  puts "cover ops enabled"
+  cloak_type=1
+ else
+  puts "no cloaking"
  end 
+
  if string =~/-s/
   my_string=string.split(/:/)[1]
   ship_align_time=ship_align_secs["#{my_string}"]
@@ -624,7 +632,7 @@ while in_space==1
     #check and click on the yellow destination marker
     my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
     puts "We #{my_message} on our destination."
-    my_action.speak("destination selected")
+    my_action.speak("ts")
     robot.delay(2000) #2 second delay after selecting the destination - order refresh workaround
     destination_selected=1
     my_action.speak("go 0 destination selected") if debug ==1
@@ -651,13 +659,17 @@ while in_space==1
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
     my_action.speak("go 1 warp") if debug ==1
-    if cloaking_ship == 1
+    if cloak_type == 1 or cloak_type ==2
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
       if jump_count > 0 #only cloak when on second jump to avoid stations.
-        puts "cloaking routine"
-        micro_warpdrive_cloak_trick(robot,cloaking_module,microwarp_module,align_button,warp_button,debug)
-        #cloak_ship(robot,cloaking_module,microwarp_module,debug)
+        puts "cloaking routine cloaktrick called"
+        if cloak_type==2
+          micro_warpdrive_cloak_trick(robot,cloaking_module,microwarp_module,align_button,warp_button,debug)
+        elsif cloak_type==1
+          puts "standard cloaking routine called"
+          cloak_ship(robot,cloaking_module,microwarp_module,debug)
+        end
       end
     else
       robot.delay(1000) #short delay for non cloaking ship
@@ -679,7 +691,7 @@ while in_space==1
     my_string=my_logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
     if my_string != "" or my_string.length > 1
       puts "2 - string is '#{my_string.to_s}'"  
-      my_action.speak("logger string is #{my_string.to_s}")
+      my_action.speak("logger string is #{my_string.to_s}") if debug==1
     end
 
     #check icons again - the warp to icon should have disappeared
@@ -713,7 +725,6 @@ while in_space==1
 
     align_time_start=Time.now.to_i #get time in secs
 
-    
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
@@ -721,7 +732,7 @@ while in_space==1
        robot.delay(500)  #1/2 second delay
                         
        if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
-        my_action.speak("acceleration overwait warning") 
+        my_action.speak("warning  acceleration overwait") 
         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
         
@@ -773,9 +784,9 @@ while in_space==1
       puts "4 - docking - '#{my_docking_string.to_s}'" if my_docking_string != ""
  
       if ( my_jump_string =~ /jumping/i )
-        my_action.speak("1 #{my_jump_string}") #speak jump string from log
+        my_action.speak("1 #{my_jump_string}") 
         jump_seq_complete=1
-        robot.delay(2000) #screen blinks. This is a work around.
+        robot.delay(rand(1500..2500)) #screen blinks. This is a work around.
       elsif (my_docking_string =~ /docking/i )
         my_action.speak("1 docking finished")
         min,sec=(Time.now.to_i-my_start).divmod(60)
@@ -783,7 +794,7 @@ while in_space==1
         exit 
       elsif ( icon_is_visable=="no" and are_we_moving =="no")
         #check log again for a jump
-        robot.delay(2000) #wait 2 secs
+        robot.delay(rand(1500..3000)) #wait 1.5-3 secs
         my_jump_string=my_logger.log_reader(debug,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
         my_docking_string=my_logger.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
         if my_jump_string != ""
@@ -792,8 +803,8 @@ while in_space==1
           my_action.speak("2 docking") #speak jump string from log
           exit
         else
-          my_action.speak("failsafe jump wait 4 secs")
-          robot.delay(4000) #4 second delay
+          my_action.speak("failsafe jump wait")
+          robot.delay(rand(3000..5000)) #wait 3-5 secs
         end
         jump_seq_complete=1
       else
