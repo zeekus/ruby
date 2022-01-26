@@ -18,7 +18,6 @@ java_import 'java.awt.Toolkit'          #gets screens size
 class LogParser
      
   def is_log_string_current(debug,loginfo,sec_threshold)
-
     puts "is_log_string_current" + loginfo if debug ==1
  
     #string stripping log date time parser
@@ -36,9 +35,9 @@ class LogParser
     diff=current_secs.to_i-logtime_secs.to_i                #calculate time diff in seconds from logs time to current time
     puts "debug: diff is #{diff}" if debug==1
     if diff < sec_threshold #theshold for number secs
-      return 1 
+      return 1 #true
     else
-      return 0
+      return 0 #false
     end
   end
   
@@ -55,7 +54,7 @@ class LogParser
     ##bash equivalent
     ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
     my_homedir=Dir.home
-    logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+    logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all files 
     #logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
     limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
     last_log_entries=[] #empty array holding last log entries
@@ -68,8 +67,6 @@ class LogParser
       file=File.open(myfile) #read file
       logfile_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
       file.close #closing file
-      # filesize=0  #get size of the file
-      # filesize=logfile_data.size
       puts "*** log_reader gamelog file has '#{logfile_data.size}' lines" if debug==1
       #only run if file size is greater than 5
       if logfile_data.size  < log_size
@@ -113,7 +110,6 @@ class LogParser
 end #class
 
 class Findtarget
-
 
   def speak(message)
     wait_delay=2 # 2 seconds 
@@ -285,18 +281,13 @@ end #end class
 
 
 def single_click(robot,target_location)
-
-   #simulate_human_mouse_movement(robot,target_location) 
-   #target_location=[x,y]
-    
+  
    target=Findtarget.new
    target.move_to_target_pixel_like_human(robot,target_location)
   
-   #left click
-   #logwrite("event: single click at #{x},#{y}")
+   #left click and release
    robot.mousePress(InputEvent::BUTTON1_MASK)
    robot.delay(155)
-   #logwrite("event: single unclick at #{x},#{y}")
    robot.mouseRelease(InputEvent::BUTTON1_MASK)
    robot.delay(155)
 end
@@ -312,8 +303,8 @@ def double_click(robot,target_location)
    end
 end
 
-    #maps for the RGB colors in HEX 
-    rgb_color_map={ 
+#maps for the RGB colors in HEX 
+rgb_color_map={ 
         "5C467"  => "gold_undock",
         "5F489"  => "gold_undock",
         "5B455"  => "gold_undock",
