@@ -344,7 +344,7 @@ def randomize_click_target(top,bottom)
 end
 
 def offset_xy_position(target_location,debug=0)
-  description: simple offset 1 pixel : randomize target location a tiny bit so we are not an obvious
+  #description: simple offset 1 pixel : randomize target location a tiny bit so we are not an obvious
   puts "single click - original location #{target_location}" if debug == 1
   x=target_location[0]+rand(-1..1)
   y=target_location[1]+rand(-1..1)
