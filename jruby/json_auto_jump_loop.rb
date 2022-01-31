@@ -577,6 +577,7 @@ yellow_icon_right_bottom=data_hash["yellow_icon_right_bottom"]
 gold_undock=data_hash["gold_undock"]
 my_start=Time.now.to_i #runtime start
 while in_space==1 #main run area begins here. 
+  #randomize places we click 
   align_button=randomize_click_target(align_to_top,align_to_bottom)
   warp_button=randomize_click_target(warp_to_top,warp_to_bottom)
   jump_button=randomize_click_target(jump_button_top,jump_button_bottom)
@@ -612,11 +613,12 @@ while in_space==1 #main run area begins here.
   jump_button_pressed=0
   warp_button_pressed=0
   ###################
-  #SEQ: 1. hit warpto button
+  #SEQ: 1. hit warpto button or jump button - depending and verify
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     robot.delay(1000)  #1 second delay
     my_action.speak("go 1 warp") if debug ==1
+    align_time_start=Time.now.to_i #get time in secs
     if cloak_type == 1 or cloak_type ==2
       puts "hit the align button"
       my_action.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
@@ -630,23 +632,21 @@ while in_space==1 #main run area begins here.
         end
       end
       #########################
-      #pressing warpto button
+      #pressing warpto button cloaker 
       #########################
       warp_count=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
       my_action.speak(" warp #{warp_count}")
       warp_button_pressed=1
-      robot.delay(3000) if warp_count ==1 #near station delay 
     else
       #########################
-      #pressing jumpto button
+      #pressing jumpto button non cloaker 
       #########################
       robot.delay(1) #short delay for non cloaking ship
       warp_count=my_action.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
       my_action.speak(" warp #{warp_count}")
       warp_button_pressed=1
-      robot.delay(3000) if warp_count ==1 #near station delay 
     end
-
+    robot.delay(3000) if warp_count ==1 #near station delay first jump 
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
     double_click(robot,ref_point,debug) #click on center of screen 
     robot.delay(500) #1/2 sec delay for log entry to appear
@@ -660,44 +660,41 @@ while in_space==1 #main run area begins here.
     if my_string.to_s =~ /warp/i or warp_to_visable=="no" #verify warp icon disappeared or we find it in the logs
       my_action.speak("in warp")
     else 
-      my_action.speak("we appear to have missed a warp button.")
       warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #double check 
       if warp_to_visable == "yes" 
-        my_action.speak("Trying again.")
+        warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #double check 
+        my_action.speak("missed a warp. Trying again.")
         null=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug) #second try
-      else
-        my_action.speak("Disrgard warning. We are warping.")
       end
     end 
   end
   #################
   #SEQ 2: ship should be speeding up: blue bar filling
   #################
-  if warp_button_pressed ==1
+  if warp_button_pressed==1
     my_action.speak("go 2 advance") if debug ==1
     #######################################################
     #Ship should be speeding up. Wait until the blue bar is full speed.
     #######################################################
     wait_count =0
-    align_time_start=Time.now.to_i #get time in secs
     until are_we_moving == "yes" 
        print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
        are_we_moving  = check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
        wait_count=wait_count+1
        robot.delay(500)  #1/2 second delay                   
        if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
-        my_action.speak("warning  acceleration overwait") 
-        puts "warning acceleration is taking too long. rescanning and clicking on yellow"
-        my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
-        warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
-        if warp_to_visable =="yes"
-          my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
-        else
-          my_action.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
-        end
-        wait_count=0 #reset wait count
+         my_action.speak("warning  acceleration overwait") 
+         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
+         my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+         warp_to_visable = check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
+         if warp_to_visable =="yes"
+           my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
+         else
+           my_action.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
+         end
+         wait_count=0 #reset wait count
        else 
-        print "." #status bar like effect
+         print "." #status bar like effect
        end
     end
     min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
@@ -712,8 +709,8 @@ while in_space==1 #main run area begins here.
     #problem area - logs are not always working/reliable. 
     #Upon jump to a new systems we should get a log entry. *Note* this ocassionally fails. 
     #######################################################
-    wait_count =0
-    my_jump_click_again = 0 # work around for stuck gates 
+    wait_count=0
+    my_jump_click_again=0 # work around for stuck gates 
     session_change_wait=0
     jbutton_seq=0
     jump_seq_complete=0
@@ -783,6 +780,7 @@ while in_space==1 #main run area begins here.
     end
     mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
     puts "in warp time was #{mins} minutes #{secs} seconds"
+    warp_button_pressed=0 if jump_seq_complete==1 #reset warp button pressed when jump completes 
 
     ########################################################
     #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
