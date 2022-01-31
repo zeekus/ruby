@@ -629,16 +629,24 @@ while in_space==1 #main run area begins here.
           cloak_ship(robot,cloaking_module,microwarp_module,debug)
         end
       end
+      #########################
+      #pressing warpto button
+      #########################
+      warp_count=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
+      my_action.speak(" warp #{warp_count}")
+      warp_button_pressed=1
+      robot.delay(3000) if warp_count ==1 #near station delay 
     else
-      robot.delay(1000) #short delay for non cloaking ship
+      #########################
+      #pressing jumpto button
+      #########################
+      robot.delay(1) #short delay for non cloaking ship
+      warp_count=my_action.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
+      my_action.speak(" warp #{warp_count}")
+      warp_button_pressed=1
+      robot.delay(3000) if warp_count ==1 #near station delay 
     end
-    #########################
-    #pressing warpto button
-    #########################
-    warp_count=my_action.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
-    my_action.speak(" warp #{warp_count}")
-    warp_button_pressed=1
-    robot.delay(3000) if warp_count ==1 #near station delay 
+
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
     double_click(robot,ref_point,debug) #click on center of screen 
     robot.delay(500) #1/2 sec delay for log entry to appear
