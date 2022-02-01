@@ -812,3 +812,4 @@ while in_space==1 #main run area begins here.
   end
   robot.delay(1500) #added 1.5 second delay for session refresh
 end  
+#test
