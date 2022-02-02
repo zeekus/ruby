@@ -322,9 +322,9 @@ def micro_warpdrive_cloak_trick ( robot,cloaking_module,micro_warpdrive,align_bu
   end
   puts "mwd cloaking"
   #align pressed earlier
-  robot.delay(rand(550..700))
+  robot.delay(rand(600..700))
   double_click(robot,micro_warpdrive,debug) #click mwd
-  robot.delay(rand(550..700))
+  robot.delay(rand(600..750))
   double_click(robot,cloaking_module,debug) #click cloaker
   #wait 5
   robot.delay(rand(4000..5000))
@@ -466,6 +466,7 @@ rgb_color_map={
   "FFFFFF" => "white_icon"}
 
   ship_align_secs={
+        "s"  =>  2,  #shuttle 
         "f"  =>  5,  #frig
         "t"  =>  7,  #transport
         "cr" =>  15, #cruiser 
