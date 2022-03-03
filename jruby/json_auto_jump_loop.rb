@@ -72,23 +72,30 @@ class LogParser
     #####################
     ##bash equivalent
     ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
-    #/home/ted/Games/eve-online/drive_c/users/ted/Documents/EVE/logs/Gamelog moved
+    my_homedir=Dir.home #get homdir
+    user=my_homedir.gsub(/.*\//,'') #get user
     
-    my_homedir=Dir.home
-    logfile_loc_glob="#{my_homedir}/EVE/logs/Gamelogs/*.txt" #glob for all
-    #logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
-    limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
-    last_log_entries=[] #empty array holding last log entries
-    #initialize variables
-    capture_string=""
-    myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+    potential_log_locations=["#{my_homedir}/EVE/logs/Gamelogs/*.txt", 
+                             "#{my_homedir}/Games/eve-online/drive_c/users/#{user}/Documents/EVE/logs/Gamelog/*.txt", 
+                             "/home/#{user}/Documents/EVE/logs/Gamelogs/*.txt"  ]
+  
+    potential_log_locations.each do |logfile_loc_glob|
+      puts "looking in #{logfile_loc_glob} for log file"
+      limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
+      last_log_entries=[] #empty array holding last log entries
+      #initialize variables
+      capture_string=""
+      myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+      if File.exists?(myfile) #we found a file. 
+        break #leaving loop
+      end
+    end
+ 
     if File.exists?(myfile)
       puts "*** log_reader my last log is #{myfile}" if debug==1
       file=File.open(myfile) #read file
       logfile_data=file.readlines.map(&:chomp) #attemping to get file data without new lines
       file.close #closing file
-      # filesize=0  #get size of the file
-      # filesize=logfile_data.size
       puts "*** log_reader gamelog file has '#{logfile_data.size}' lines" if debug==1
       #only run if file size is greater than 5
       if logfile_data.size  < log_size
