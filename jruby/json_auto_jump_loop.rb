@@ -72,8 +72,10 @@ class LogParser
     #####################
     ##bash equivalent
     ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
+    #/home/ted/Games/eve-online/drive_c/users/ted/Documents/EVE/logs/Gamelog moved
+    
     my_homedir=Dir.home
-    logfile_loc_glob="#{my_homedir}/Documents/EVE/logs/Gamelogs/*.txt" #glob for all
+    logfile_loc_glob="#{my_homedir}/EVE/logs/Gamelogs/*.txt" #glob for all
     #logfile_loc_glob="#{my_homedir}/Documents/testlog.txt" #glob for all
     limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
     last_log_entries=[] #empty array holding last log entries
@@ -774,7 +776,7 @@ while in_space==1 #main run area begins here.
             my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
             single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jbutton_seq=jbutton_seq+1
-            my_action.speak("jump again #{jbutton_seq}") # if debug == 1
+            my_action.speak("jump again #{jbutton_seq} timeout") # if debug == 1
           end           
         end
       end 
