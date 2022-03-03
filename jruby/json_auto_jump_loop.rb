@@ -79,6 +79,7 @@ class LogParser
                              "#{my_homedir}/Games/eve-online/drive_c/users/#{user}/Documents/EVE/logs/Gamelog/*.txt", 
                              "/home/#{user}/Documents/EVE/logs/Gamelogs/*.txt"  ]
   
+    myfile=""
     potential_log_locations.each do |logfile_loc_glob|
       puts "looking in #{logfile_loc_glob} for log file"
       limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
