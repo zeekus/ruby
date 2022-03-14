@@ -66,8 +66,8 @@ def request_data(robot,label,build_list,counter)
   else 
     build_list.push([ "#{label}_top", [x,y] ])
     #build_list.push("#{label}_top", [x,y] )
-    x=x+5
-    y=y+5
+    x=x+8
+    y=y+8
     build_list.push([ "#{label}_bottom", [x,y] ])
     #build_list.push("#{label}_bottom", [x,y])
     #build_list.push(["#{label}_bottom,[#{x},#{y}]"])

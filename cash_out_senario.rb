@@ -3,7 +3,7 @@
 #description: calculate tax and reinvest senarios. 
 #
 
-speculation_price_of_BTC=[ 165000, 201000, 349000, 450000 ]
+price_object=[ 165000, 201000, 349000, 450000 ]
 sell_coins=STDIN.gets.chomp()
 
 
@@ -17,15 +17,15 @@ def format_number(number)
 end
 
 
-for x in speculation_price_of_BTC
+for x in price_object
   #format as decimal float
   puts "--------------------"
   after_tax  = ( x.to_f * sell_coins.to_f * 0.50 )
   buy_back=( x.to_f * 0.3)
-  puts "1) BTC price " + format_number('%.2f' % x)
+  puts "1) object price " + format_number('%.2f' % x)
   expected_retrace =  after_tax.to_f / buy_back.to_f
-  puts "2) after tax for sell of #{sell_coins.to_i} BTC:" + format_number('%.2f' % after_tax)
-  puts "3) " + format_number('%.4f' % expected_retrace) + " bitcoins @ #{buy_back}"
+  puts "2) after tax for sell of #{sell_coins.to_i} object:" + format_number('%.2f' % after_tax)
+  puts "3) " + format_number('%.4f' % expected_retrace) + " object @ #{buy_back}"
 end
 
 
