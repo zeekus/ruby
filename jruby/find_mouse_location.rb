@@ -16,6 +16,11 @@ def get_mouse_loc(robot)
     return my_x,my_y
 end
 
+def get_clicks(robot)
+    count = MouseInfo.getClickCount()
+    puts "mouse click was #{count}"
+end
+
 puts "loading robot super class"
 robot= java.awt.robot.new
 
