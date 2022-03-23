@@ -41,7 +41,7 @@ end
 def get_mouse_loc(robot)
     my_x=MouseInfo.getPointerInfo().getLocation().x
     my_y=MouseInfo.getPointerInfo().getLocation().y
-    puts "[#{my_x},#{my_y}]"
+    #puts "[#{my_x},#{my_y}]"
     return my_x,my_y
 end
 
@@ -65,6 +65,7 @@ while counter <= stop_number  do
 end
 
 #sample of colors sorted
+puts "\nunique colors found: "
 for line in array_of_colors.uniq
    puts line
 end

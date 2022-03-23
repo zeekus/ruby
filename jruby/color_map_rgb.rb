@@ -63,7 +63,6 @@ end
 def get_mouse_loc(robot)
     my_x=MouseInfo.getPointerInfo().getLocation().x
     my_y=MouseInfo.getPointerInfo().getLocation().y
-    puts "[#{my_x},#{my_y}]"
     return my_x,my_y
 end
 
@@ -74,6 +73,6 @@ if rgb_color_map[rgb_string] != nil
    puts "The pixel could be part of the " + rgb_color_map[rgb_string]
 else
   #nulls will break things
-  puts "The pixel is not mapped"
+  puts "The pixel color not found in map file."
 end
 

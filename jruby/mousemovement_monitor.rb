@@ -22,15 +22,11 @@ in_future=(Time.now.getutc.to_i)+10
 
 robot=Robot.new
 until in_future == Time.now.getutc.to_i
-  loc1=get_time_and_loc(robot)
-  #puts loc1
-  loc2=get_time_and_loc(robot)
-  #puts loc2
-  first_loc=loc1.split(':')[1]
-  sec_loc=loc2.split(':')[1]
-  if first_loc == sec_loc 
-    #not moving
-  else
-    puts "Pointer location is [#{first_loc}]"
+  tlocation1=get_time_and_loc(robot) #time and location
+  tlocation2=get_time_and_loc(robot) #time and location
+  loc1=tlocation1.split(':')[1] #location 1
+  loc2=tlocation2.split(':')[1] #location 2
+  if loc1 != loc2 #display if movement 
+    puts "Pointer location is [#{loc1}]" 
   end
 end

@@ -10,19 +10,12 @@ java_import 'java.awt.Color'             #gets pixel color at mouse  location
 
 
 def get_mouse_loc(robot)
-    my_x=MouseInfo.getPointerInfo().getLocation().x
-    my_y=MouseInfo.getPointerInfo().getLocation().y
-    puts "function - get_mouse_location [#{my_x},#{my_y}]"
-    return my_x,my_y
+    return MouseInfo.getPointerInfo().getLocation().x, MouseInfo.getPointerInfo().getLocation().y
 end
 
-def get_clicks(robot)
-    count = MouseInfo.getClickCount()
-    puts "mouse click was #{count}"
-end
-
-puts "loading robot super class"
+puts "loading robot super class\n"
 robot= java.awt.robot.new
 
 x,y=get_mouse_loc(robot)
 puts "returned value - current mouse location is [#{x},#{y}]"
+

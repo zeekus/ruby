@@ -39,10 +39,7 @@ def get_color_of_pixel(robot,x,y)
 end
 
 def get_mouse_loc(robot)
-    my_x=MouseInfo.getPointerInfo().getLocation().x
-    my_y=MouseInfo.getPointerInfo().getLocation().y
-    puts "[#{my_x},#{my_y}]"
-    return my_x,my_y
+    return MouseInfo.getPointerInfo().getLocation().x,MouseInfo.getPointerInfo().getLocation().
 end
 
 def color_intensity (r,g,b)
