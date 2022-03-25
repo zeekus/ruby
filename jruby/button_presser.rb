@@ -8,14 +8,15 @@ java_import 'java.awt.Robot'            #robot class
 
 
 def press_enter(robot,name)
-    @code = java.awt.event.KeyEvent.const_get("VK_#{name}")
+    @code = java.awt.event.KeyEvent.const_get("VK_#{name}") #translates button to machine reference
     robot.key_press(@code)
     robot.key_release(@code)
 end
 
 robot = Robot.new
 counter=0
-BUTTON="ENTER"
+BUTTON="ENTER" #button to press
+
 while true
   puts "pressing #{BUTTON} #{counter}"
   press_enter(robot,BUTTON)
