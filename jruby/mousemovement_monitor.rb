@@ -3,19 +3,20 @@
 require 'java'
 
 java_import 'java.awt.Robot'            #robot class
-java_import 'java.awt.event.InputEvent' #moves mouse and typing
+#java_import 'java.awt.event.InputEvent' #moves mouse and typing
 java_import 'java.awt.MouseInfo'        #get location of mouse
-java_import 'java.awt.Color'            #get color of pixel at location on screen
-java_import 'java.awt.event.KeyEvent'   #presing keys
-java_import 'java.awt.Toolkit'          #gets screens size
+#java_import 'java.awt.Color'            #get color of pixel at location on screen
+#java_import 'java.awt.event.KeyEvent'   #presing keys
+#java_import 'java.awt.Toolkit'          #gets screens size
+#java_import 'java.awt.event.MouseEvent' 
 
 def get_time_and_loc(robot)
    mytime=Time.now.getutc.to_i
    x=MouseInfo.getPointerInfo().getLocation().x
    y=MouseInfo.getPointerInfo().getLocation().y
+   #check_mouse_button(robot)
    return "#{mytime}:#{x},#{y}" 
 end
-
 
 #10 seconds in the future
 in_future=(Time.now.getutc.to_i)+10
