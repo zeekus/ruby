@@ -121,3 +121,19 @@ class LogParser
     return capture_string #convert to string just in case
   end #function
 end #class
+
+class GUIchecks
+  def check_blue_bar()
+  end
+
+  def check_selected_item_menu()
+     #Selected Item menu- icons
+     #at gate stopping or stopped{ 'align_to'=>'1', 'warp_to'=>'0', 'jump'=>'1','orbit=>'1', 'keep_distance=>'0', 'target=>'1', 'eye1'==>'1', 'eye2' =>'1' , 'i_icon'=>'1']
+     #at station stopping or stopped{ 'align_to'=>'1', 'warp_to'=>'0', 'jump'=>'1','orbit=>'1', 'keep_distance=>'0', 'target=>'1', 'eye1'==>'1', 'eye2' =>'1' , 'i_icon'=>'1']
+     #in warp to gate or station { 'align_to'=>'0', 'warp_to'=>'0', 'jump'=>'1','orbit=>'0', 'keep_distance=>'0', 'target=>'0', 'eye1'==>'0', 'eye2' =>'1' , 'i_icon'=>'1']
+  end
+
+  generate_logfeedback_with_a_click()
+      
+  end
+end
