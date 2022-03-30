@@ -123,9 +123,8 @@ class Logparse
 end #class
 
 class GUI_view
-  def self.check_blue_bar()
-    #reliabilty moderate - tells when we are moving or not. - can fail 5-10% of the time. 
-  end
+
+ 
 
   def self.check_selected_item_menu()
     #low-medium depending on what is checked. 
@@ -143,13 +142,23 @@ class GUI_view
   def self.look_for_blue_session_cloak_timer
     #do we see the session timer. Indicates session change completed. 
     #reliability: low-medium - can fail 20% of the time. 
+
   end    
+
+  def self.check_button_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
+      #determine if a button changes colors when the mouse is moved into the box.
+      offset_xy_position
+  end
 
   def self.check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     #description: scan region of screen without moving the mouse
+    #reliabilty moderate - tells when we are moving or not. - can fail 5-10% of the time.
+    #identifies if ship is moving or not
+    #idenfiies buttons in interface. lowest reliablility.
+    #identifies yellow icon 
     target_location=Utility.color_pixel_scan_in_range(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     if target_location != [0,0]
-      return "yes"
+      return "yes" #positive
     else
       puts "warn: we didn't find the #{search_element} at #{target_location}" if debug == 1
       if search_element=="grey_speed" #workaround grey and white look very similar assume same 

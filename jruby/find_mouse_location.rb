@@ -13,8 +13,10 @@ def get_mouse_loc(robot)
     return MouseInfo.getPointerInfo().getLocation().x, MouseInfo.getPointerInfo().getLocation().y
 end
 
-puts "loading robot super class\n"
+
+puts "loading robot super class. and sleeping 5\n"
 robot= java.awt.robot.new
+sleep 5
 
 x,y=get_mouse_loc(robot)
 puts "returned value - current mouse location is [#{x},#{y}]"
