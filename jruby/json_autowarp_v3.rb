@@ -2,7 +2,19 @@
 #description: clean up logic. rewritev3. 
 #log items - expanded for reference
 #image searches expanded
-   
+
+#logic redo
+#1. First sequence - press warp verify warp
+#2. Main loop: warp until docking sequence
+    #A align ( action double click align button. Align button stays visable: verify with 'please wait' in log. or click again.) 
+    #B warp to (verify warp to button is no longer visable and in warp appears in logs or press again)
+      #button 1,2 disappear upon warp. 
+    #C wait for slowdown. (monitor blue bar turns white and button1 appears)
+    #D force jump ( press button 3 and wait for confirmation in logs or button 2 appears)
+    #E scan for buttons if they don't exist then scan for yellow icon. 
+#3. perform docking operations
+
+
 require 'java'
 require 'json'
 require 'time'
@@ -341,6 +353,24 @@ end #end class GUI_Interact
 
 class Utility
 
+  def self.button_check(robot,x,y)
+    robot.mouseMove(x,y) #button location
+    r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
+    puts r,g,b
+    rgb_total=r+g+b
+
+    robot.mouseMove(x,y-25) #move mouse off button in upward direction
+    r1,g1,b1=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
+    puts r1,g1,b1
+    rgb1_total = r1+g1+b1
+
+    if rgb1_total != rgb_total
+        return "yes"
+    else
+        return "no"
+    end
+  end
+
   def self.color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
     mybreak =0
@@ -388,6 +418,8 @@ class Utility
     colori = ( r + g + b ) / 3.0
     return colori 
   end
+
+
 
   #Note: guess_color needs a rewrite. The logic her is not accurate. Grey vs white. The colors that are easier to detect should be higher. 
   #problem: not very accurate
@@ -624,11 +656,7 @@ while in_space==1 #main run area begins here.
     robot.delay(500)  #1/2 second delay
     User_Feedback.speak("refresh click") if debug == 1
     GUI_Interact.single_click(robot,ref_point,debug,randomize=0) #click on center of screen 
-    my_string=Logger.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
 
-    if my_string =~ /please wait/i
-      robot.delay(3000) #3 second delay after selecting the destination - order refresh workaround
-    end
 
     #check and click on the yellow destination marker
     my_message=GUI_view.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
@@ -657,8 +685,15 @@ while in_space==1 #main run area begins here.
     User_Feedback.speak("go 1 warp") if debug ==1
     align_time_start=Time.now.to_i #get time in secs
     if cloak_type == 1 or cloak_type ==2
-      puts "hit the align button"
-      GUI_Interact.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
+      puts "hit the align button until we see 'please wait' in the logs"
+      
+      until my_string =~ /please wait/i
+        GUI_Interact.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
+        robot.delay(500) #1/2 sec delay for log entry to appear
+        my_string=Logger.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
+        sleep 1
+      end
+
       if jump_count > 0 #only cloak when on second jump to avoid stations.
         puts "cloaking routine cloaktrick called"
         if cloak_type==2
@@ -668,25 +703,27 @@ while in_space==1 #main run area begins here.
           GUI_Interact.cloak_ship(robot,cloaking_module,microwarp_module,debug)
         end
       end
-      #########################
-      #pressing warpto button cloaker 
-      #########################
-      warp_count=GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
-      User_Feedback.speak(" warp #{warp_count}")
-      warp_button_pressed=1
-    else
-      #########################
-      #pressing jumpto button non cloaker 
-      #########################
-      robot.delay(1) #short delay for non cloaking ship
-      warp_count=GUI_Interact.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
-      User_Feedback.speak(" warp #{warp_count}")
-      warp_button_pressed=1
+    end
+    #########################
+    #pressing warpto button  
+    #########################
+    my_string=""
+    User_Feedback.speak(" warp #{warp_count}")
+    warp_count=GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
+   
+    warp_button_pressed=1
+
+    until my_string =~ /warping/i
+      GUI_Interact.double_click(robot,ref_point,debug) #click on center of screen
+      robot.delay(500) #1/2 sec delay for log entry to appear
+      my_string=Logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
+      GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
+      robot.delay(1000)  #1 second delay
     end
     robot.delay(3000) if warp_count ==1 #near station delay first jump 
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
-    GUI_Interact.double_click(robot,ref_point,debug) #click on center of screen 
-    robot.delay(500) #1/2 sec delay for log entry to appear
+     
+    
     my_string=Logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
     if my_string != "" or my_string.length > 1
       puts "2 - string is '#{my_string.to_s}'"  
