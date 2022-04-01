@@ -691,7 +691,7 @@ while in_space==1 #main run area begins here.
       until my_string =~ /please wait/i
         GUI_Interact.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
         robot.delay(500) #1/2 sec delay for log entry to appear
-        my_string=Logger.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
+        my_string=Logparse.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
         sleep 1
       end
 
@@ -717,7 +717,7 @@ while in_space==1 #main run area begins here.
     until my_string =~ /warping/i
       GUI_Interact.double_click(robot,ref_point,debug) #click on center of screen
       robot.delay(500) #1/2 sec delay for log entry to appear
-      my_string=Logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
+      my_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
       GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
       robot.delay(1000)  #1 second delay
     end
@@ -725,7 +725,7 @@ while in_space==1 #main run area begins here.
     #double click somewhere in space to get the warp message in the log - looking for "(notify) You cannot do that while warping.""
      
     
-    my_string=Logger.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
+    my_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #warping message with double click or click on speed while in space
     if my_string != "" or my_string.length > 1
       puts "2 - string is '#{my_string.to_s}'"  
       User_Feedback.speak("logger string is #{my_string.to_s}") if debug==1
@@ -798,9 +798,9 @@ while in_space==1 #main run area begins here.
       my_button_visable = GUI_view.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
       my_action.speak("L3 icon #{icon_is_visable}") if debug ==1
       #scan logs for a session change
-      my_jump_string=Logger.log_reader(debug,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+      my_jump_string=Logparse.log_reader(debug,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
       puts "3 - jumping - '#{my_jump_string.to_s}'" if my_jump_string != ""
-      my_docking_string=Logger.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+      my_docking_string=Logparse.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
       puts "4 - docking - '#{my_docking_string.to_s}'" if my_docking_string != ""
       if ( my_jump_string =~ /jumping/i )
         User_Feedback.speak("1 #{my_jump_string}") 
@@ -814,8 +814,8 @@ while in_space==1 #main run area begins here.
       elsif ( icon_is_visable=="no" and are_we_moving =="no")
         #check log again for a jump
         robot.delay(rand(1500..3000)) #wait 1.5-3 secs
-        my_jump_string=Logger.log_reader(debug,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
-        my_docking_string=Logger.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+        my_jump_string=Logparse.log_reader(debug,"Jumping",log_size=5,sec_threshold=3) #jumping is slow 10 secs
+        my_docking_string=Logparse.log_reader(debug,"docking",log_size=5,sec_threshold=5) #jumping is slow 10 secs
         if my_jump_string != ""
           User_Feedback.speak("2 #{my_jump_string}") #speak jump string from log
         elsif  my_docking_string =~ /docking/i
