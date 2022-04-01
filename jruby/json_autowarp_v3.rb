@@ -715,7 +715,7 @@ while in_space==1 #main run area begins here.
     warp_button_pressed=1
 
     until my_string =~ /warping/i
-      GUI_Interact.double_click(robot,ref_point,debug) #click on center of screen
+      GUI_Interact.double_click(robot,ref_point,debug,randomize=1) #click on center of screen
       robot.delay(500) #1/2 sec delay for log entry to appear
       my_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
       GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
