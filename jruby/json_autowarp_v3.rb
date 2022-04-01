@@ -261,7 +261,7 @@ class GUI_Interact
  def self.hit_the_button(robot,target_location,mycount,message,debug) 
    #'j' for jump 'a' for align 
   if message =~ /j/i or message =~ /a/i or message =~ /w/i #jump,align,or warpto button gets double click
-    my_message=double_click(robot,target_location,debug) #double click
+    my_message=double_click(robot,target_location,debug,randomize=1) #double click
   else 
     my_message=single_click(robot,target_location,debug,randomize=1) #every thing else gets single click
   end
@@ -281,19 +281,19 @@ class GUI_Interact
 
   #assuming align pressed earlier and successful.
   robot.delay(rand(600..700))
-  double_click(robot,micro_warpdrive,debug) #click mwd
+  double_click(robot,micro_warpdrive,debug,randomize=1) #click mwd
 
   robot.delay(rand(600..750))
-  double_click(robot,cloaking_module,debug) #click cloaker
+  double_click(robot,cloaking_module,debug,randomize=1) #click cloaker
 
   #wait 5
   robot.delay(rand(4000..5000))
 
   #click cloak
-  double_click(robot,cloaking_module,debug) #click cloaker
+  double_click(robot,cloaking_module,debug,randomize=1) #click cloaker
 
   #click jump or warp to
-  double_click(robot,warp_button,debug)
+  double_click(robot,warp_button,debug,randomize=1)
  end
 
  def self.move_mouse_to_target_like_human(robot,target_location,debug) 
