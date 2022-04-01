@@ -159,7 +159,8 @@ class GUI_view
 
   def self.check_button_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
       #determine if a button changes colors when the mouse is moved into the box.
-      offset_xy_position
+      #Utility.offset_xy_position
+      puts "todo"
   end
 
   def self.check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
@@ -233,7 +234,7 @@ end
 class GUI_Interact
 
   def self.single_click(robot,target_location,debug,randomize)
-    Utility.target_location=offset_xy_position(target_location) if randomize==1
+    target_location=Utility.offset_xy_position(target_location) if randomize==1
     move_mouse_to_target_like_human(robot,target_location,debug)
     robot.delay(rand(150..200))
     #left click
