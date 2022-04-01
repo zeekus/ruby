@@ -242,7 +242,7 @@ class GUI_Interact
     robot.mouseRelease(InputEvent::BUTTON1_MASK)
  end
  
- def double_click(robot,target_location,debug,randomize)
+ def self.double_click(robot,target_location,debug,randomize)
     for i in (1..2)
       self.single_click(robot,target_location,debug,randomize)
     end
