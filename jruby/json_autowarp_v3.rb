@@ -297,7 +297,7 @@ class GUI_Interact
  end
 
  def self.move_mouse_to_target_like_human(robot,target_location,debug) 
-  x,y=get_current_mouse_location(robot)
+  x,y=Utility.get_current_mouse_location(robot)
   mydebugger("move_mouse_to_target_like_human", "mouse location", [x,y] ) 
 
   counter=0

@@ -97,7 +97,7 @@ while counter <= stop_number  do
  best_guess=guess_color(r,g,b)
  puts "guesing color is #{best_guess}"
  #find_color_match(robot,x,y,target_color="pale_black",rgb_hex_map)
- sleep 5
+ sleep 30
  counter +=1
 end
 
