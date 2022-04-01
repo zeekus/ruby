@@ -297,7 +297,7 @@ class GUI_Interact
  end
 
  def self.move_mouse_to_target_like_human(robot,target_location,debug) 
-  x,y=Utility.get_current_mouse_location(robot)
+  x,y=Utility.get_current_mouse_location(robot,debug)
   mydebugger("move_mouse_to_target_like_human", "mouse location", [x,y] ) 
 
   counter=0
@@ -339,7 +339,7 @@ class GUI_Interact
       puts ("only down #{counter}") if debug==1
       y=y-1
     else
-     my_tmp_location=self.get_current_mouse_location(robot)
+     my_tmp_location=self.get_current_mouse_location(robot,debug)
      self.mydebugger("move_to_target_pixel_like_human", "target location", "#{target_location[0]},#{target_location[1]}" ) 
      robot.delay(1)
      return(1)
