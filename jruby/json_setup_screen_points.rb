@@ -90,6 +90,7 @@ map_of_stored_data={
   "align_to"                  => "move to the align to button.",
   "warp_to"                   => "move to the warp to button",
   "jump_button"               => "move to the jump button",
+  "orbit_button"              => "move to the orbit button",
   "white_i_icon"              => "move to the white icon button",
   "blue_speed"                => "move to the jump button",
 }
