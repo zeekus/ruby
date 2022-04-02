@@ -361,27 +361,6 @@ end #end class GUI_Interact
 
 class Utility
 
-  def self.button_check(robot,x,y,debug=0,ref_point)
-    
-    GUI_Interact.move_mouse_to_target_like_human(robot,target_location=[x,y],debug=0) 
-    robot.delay(500)
-
-    hex1=get_hex_color(robot,x,y,debug) #with mouse on location
-    puts "x is #{x} and y is #{y}: hex1 is #{hex1}"
-
-    GUI_Interact.single_click(robot,ref_point,debug,randomize=0) #move cursor away
-    hex2=get_hex_color(robot,x,y,debug) #with mouse on location
-    puts "x is #{x} and y is #{y}: hex2 is #{hex2}"
-    
-    if (hex1==hex2) == true
-      puts "returning 0 same"
-      return 0 #this is not an interactive button
-    else
-      puts "returning 1 interactive"
-      return 1  #this is a button
-    end
-  end
-
   def self.color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
     mybreak =0
@@ -523,6 +502,31 @@ class Utility
     return [x,y]
   end
 end #Utility class
+
+def button_check(robot,x,y,debug=0,ref_point)
+    
+  GUI_Interact.move_mouse_to_target_like_human(robot,target_location=[x,y],debug=0) 
+  robot.delay(500)
+
+  r,g,b=Utility.get_color_of_pixel(robot,x,y,debug) #with mouse on location
+  hue1=Utility.color_intensity(r,g,b)
+  #hex1=Utility.get_hex_color(robot,x,y,debug) #with mouse on location
+  puts "x is #{x} and y is #{y}: mouse on location is #{hue1}"
+
+  GUI_Interact.single_click(robot,ref_point,debug,randomize=0) #move cursor away
+  r,g,b=Utility.get_color_of_pixel(robot,x,y,debug) #with mouse on location
+  hue2=Utility.color_intensity(r,g,b)
+  #hex2=Utility.get_hex_color(robot,x,y,debug) #with mouse on location
+  puts "x is #{x} and y is #{y}: mouse is off location  #{hue2}"
+  
+  if (hue1 > hue2)
+    puts "probably a button"
+    return true
+  else
+    puts  "not interactive"
+    return false  #this is a button
+  end
+end
 
 ############
 ##MAIN
@@ -747,18 +751,19 @@ while in_space==1 #main run area begins here.
     #pressing warpto button  
     #########################
 
-    button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
+    #button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
     count=0 
-    until button_is_interactive == 0
+    button_is_interactive=""
+    until button_is_interactive == false
       GUI_Interact.hit_the_button(robot,target_location=warp_button,jump_count,message="w",debug=0)
       robot.delay(500)
-      button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
+      button_is_interactive=button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
       puts "in while loop count is #{count} #{button_is_interactive}"
       robot.delay(5000) #1/2 sec delay for log entry to appear
       count = count + 1
     end
 
-    if button_is_interactive ==  0 
+    if button_is_interactive ==  false
       warp_button_pressed=1
       warp_count=warp_count+1
     end
@@ -780,7 +785,7 @@ while in_space==1 #main run area begins here.
        if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
          User_Feedback.speak("warning  acceleration overwait") 
          puts "warning acceleration is taking too long. rescanning and clicking on yellow"
-         my_message=GUI_Interact.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+         my_message=GUI_view.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
          warp_to_visable = GUI_view.check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug) #check icons
          if warp_to_visable =="yes"
           GUI_Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
@@ -865,7 +870,7 @@ while in_space==1 #main run area begins here.
           icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
           robot.delay(300)
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
-            my_message=check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+            my_message=Gui_view.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
             GUI_Interact.single_click(robot,target_location=jump_button_bottom,debug,randomize=1) #force single click
             jbutton_seq=jbutton_seq+1
             User_Feedback.speak("jump again #{jbutton_seq} timeout") # if debug == 1

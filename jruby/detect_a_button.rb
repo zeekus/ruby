@@ -44,7 +44,7 @@ class Utility
         puts r1,g1,b1
         rgb1_total = r1+g1+b1
 
-        if rgb1_total != rgb_total
+        if rgb1_total >  rgb_total
             return "yes"
         else
             return "no"
