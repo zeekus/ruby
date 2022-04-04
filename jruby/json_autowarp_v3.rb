@@ -721,6 +721,7 @@ while in_space==1 #main run area begins here.
   start_jump_count=jump_count
   jump_button_pressed=0
   warp_button_pressed=0
+  align_string="" 
   ###################
   #SEQ: 1. hit warpto button or jump button - depending and verify
   ###################
@@ -730,10 +731,10 @@ while in_space==1 #main run area begins here.
     if cloak_type == 1 or cloak_type ==2
       puts "hit the align button until we see 'please wait' in the logs"
       
-      until my_string =~ /please wait/i
+      until align_string =~ /please wait/i
         GUI_Interact.hit_the_button(robot,target_location=align_button,jump_count,message="a",debug)
         robot.delay(500) #1/2 sec delay for log entry to appear
-        my_string=Logparse.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
+        align_string=Logparse.log_reader(debug,"please wait",log_size=5,sec_threshold=5) #got a wait
       end
 
       if jump_count > 0 #only cloak when on second jump to avoid stations.
@@ -754,18 +755,21 @@ while in_space==1 #main run area begins here.
     #button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
     count=0 
     button_is_interactive=""
-    until button_is_interactive == false
+    warping_string=""
+    until button_is_interactive == false or warping_string =~ /warping/i 
       GUI_Interact.hit_the_button(robot,target_location=warp_button,jump_count,message="w",debug=0)
       robot.delay(500)
+      warping_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
       button_is_interactive=button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
       puts "in while loop count is #{count} #{button_is_interactive}"
       robot.delay(5000) #1/2 sec delay for log entry to appear
       count = count + 1
     end
 
-    if button_is_interactive ==  false
+    if button_is_interactive ==  false or warping_string =~ /warping/i 
       warp_button_pressed=1
       warp_count=warp_count+1
+      are_we_moving  = GUI_view.check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
     end
   end
   #################
@@ -910,6 +914,6 @@ while in_space==1 #main run area begins here.
     end
     puts "" #new line
   end
-  robot.delay(1500) #added 1.5 second delay for session refresh
+  robot.delay(1000) #added 1 second delay for session refresh
 end  
 #test
