@@ -152,7 +152,7 @@ class Findtarget
        return(1)
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(1)
+      robot.delay(.5)
     end #end of until loop
   end #end function move_to_target_pixel_like_human
 end #end class
@@ -175,7 +175,7 @@ for k,v in data_hash
   puts "#{k} : #{v}"
   mytarget.speak("#{k}")
   mytarget.move_to_target_pixel_like_human(robot,data_hash["#{k}"])
-  sleep 1
+  sleep 2
 end
 
 # mytarget.move_to_target_pixel_like_human(robot,data_hash["yellow_icon_left_top"])

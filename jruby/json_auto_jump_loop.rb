@@ -74,22 +74,22 @@ class LogParser
     ##file=system("find /home/$USER/Documents/EVE/logs/Gamelogs -cmin -1 -exec ls -lah {} ';'")
     my_homedir=Dir.home #get homdir
     user=my_homedir.gsub(/.*\//,'') #get user
-    
+        
     potential_log_locations=["#{my_homedir}/EVE/logs/Gamelogs/*.txt", 
                              "#{my_homedir}/Games/eve-online/drive_c/users/#{user}/Documents/EVE/logs/Gamelog/*.txt", 
                              "/home/#{user}/Documents/EVE/logs/Gamelogs/*.txt"  ]
-  
     myfile=""
     potential_log_locations.each do |logfile_loc_glob|
-      puts "looking in #{logfile_loc_glob} for log file"
-      limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
-      last_log_entries=[] #empty array holding last log entries
-      #initialize variables
-      capture_string=""
-      myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
-      if File.exists?(myfile) #we found a file. 
-        break #leaving loop
-      end
+     puts "looking in #{logfile_loc_glob} for log file"
+     limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
+     last_log_entries=[] #empty array holding last log entries
+     #initialize variables
+     capture_string=""
+     myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
+     if myfile != nil and File.exists?(myfile) #we found a file. 
+       puts "we found file #{myfile}"
+       break #leaving loop
+     end
     end
  
     if File.exists?(myfile)

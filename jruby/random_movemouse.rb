@@ -103,7 +103,7 @@ class Findtarget
        return(1)
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(0.1) #mouse move is based on loop (0.1 for faster)
+      robot.delay(0.5) #mouse move is based on loop (0.1 for faster)
     end #end of until loop
   end #end function move_to_target_pixel_like_human
 end #end class
@@ -123,5 +123,5 @@ for x in 1..100
   location=mytarget.get_current_mouse_location(robot)
   print "\n" #extra return
   print "After move: my current mouse location is #{location}\n"
-  robot.delay(5000)
+  robot.delay(10)
 end
