@@ -14,9 +14,8 @@ java_import 'java.awt.MouseInfo'        #get location of mouse
 class Utility 
     def self.get_time_and_loc(robot)
       mytime=Time.now.getutc.to_i
-      x=MouseInfo.getPointerInfo().getLocation().x
-      y=MouseInfo.getPointerInfo().getLocation().y
-      #check_mouse_button(robot)
+      robot.delay(0.1)
+      x,y=get_current_mouse_location(robot)  
       return "#{mytime}:#{x},#{y}" 
     end
   
@@ -30,28 +29,46 @@ class Utility
     end
 
     def self.get_current_mouse_location(robot)
-        return MouseInfo.getPointerInfo().getLocation().x,MouseInfo.getPointerInfo().getLocation().y
+      x=MouseInfo.getPointerInfo().getLocation().x
+      y=MouseInfo.getPointerInfo().getLocation().y
+      #puts "mouse location is #{x},#{y}"
+      return x,y
     end
 
-    def self.button_check(robot,x,y)
-        robot.mouseMove(x,y) #button location
-        r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
-        puts r,g,b
-        rgb_total=r+g+b
+    def self.color_intensity (r,g,b)
+      colori = ( r + g + b ) / 3.0
+      return colori 
+    end
 
-        robot.mouseMove(x,y-15) #move mouse off button in upward direction
-        r1,g1,b1=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
-        puts r1,g1,b1
-        rgb1_total = r1+g1+b1
+  def self.button_check(robot,x,y)
+    #get_current_mouse_location(robot)
+    
+    r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
+    puts r,g,b
+    hue1=color_intensity(r,g,b)
+    puts "hue1 is #{hue1}"
+    
+    y1=y
+    until (y1==y-50) #50 pixel offset should work
+      robot.mouseMove(x,y1) #move mouse off button in upward direction
+      robot.delay(0.1)
+      get_current_mouse_location(robot)
+      y1=y1-1
+    end
 
-        if rgb1_total >  rgb_total
-            return "yes"
-        else
-            return "no"
-        end
+    r1,g1,b1=get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
+    puts r1,g1,b1
+    hue2=color_intensity(r1,g1,b1)
+    puts "hue2 is #{hue2}"
+
+    if hue1 >  hue2 or hue2 > hue1
+        return "yes"
+    else
+        return "no"
     end
   end
-  
+end #class Utility
+
 
 
 robot = Robot.new
@@ -62,5 +79,6 @@ are_we_a_button=Utility.button_check(robot,x,y)
 if are_we_a_button=="yes"
     puts "we found a clickable button"
 end
+
 
 
