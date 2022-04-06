@@ -78,19 +78,14 @@ class Logparse
     potential_log_locations.each do |logfile_loc_glob|
       puts "looking in #{logfile_loc_glob} for log file"
       limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
-      puts "1"
       last_log_entries=[] #empty array holding last log entries
-      puts "2"
       #initialize variables
       capture_string=""
-      puts "3"
       myfile=Dir.glob(logfile_loc_glob).max_by { |file_name| File.ctime(file_name) } 
-      puts "4"
       if myfile != nil and File.exists?(myfile) #we found a file. 
         puts "we found file #{myfile}"
         break #leaving loop
       end
-      puts "5"
     end
  
     if File.exists?(myfile)
@@ -183,11 +178,6 @@ class GUI_view
     #reliability: low-medium - can fail 20% of the time. 
   end    
 
-  def self.check_button_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
-      
-      #Utility.offset_xy_position
-      puts "todo"
-  end
 
   def self.check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     #description: scan region of screen without moving the mouse
@@ -522,30 +512,7 @@ class Utility
   end
 end #Utility class
 
-# def button_check(robot,x,y,debug=0,ref_point)
-    
-#   GUI_Interact.move_mouse_to_target_like_human(robot,target_location=[x,y],debug=0) 
-#   robot.delay(500)
 
-#   r,g,b=Utility.get_color_of_pixel(robot,x,y,debug) #with mouse on location
-#   hue1=Utility.color_intensity(r,g,b)
-#   #hex1=Utility.get_hex_color(robot,x,y,debug) #with mouse on location
-#   puts "x is #{x} and y is #{y}: mouse on location is #{hue1}"
-
-#   GUI_Interact.single_click(robot,ref_point,debug,randomize=0) #move cursor away
-#   r,g,b=Utility.get_color_of_pixel(robot,x,y,debug) #with mouse on location
-#   hue2=Utility.color_intensity(r,g,b)
-#   #hex2=Utility.get_hex_color(robot,x,y,debug) #with mouse on location
-#   puts "x is #{x} and y is #{y}: mouse is off location  #{hue2}"
-  
-#   if (hue1 > hue2)
-#     puts "probably a button"
-#     return true
-#   else
-#     puts  "not interactive"
-#     return false  #this is a button
-#   end
-# end
 
 ############
 ##MAIN
@@ -779,8 +746,9 @@ while in_space==1 #main run area begins here.
       GUI_Interact.hit_the_button(robot,target_location=warp_button,jump_count,message="w",debug=0)
       robot.delay(500)
       warping_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
+      puts "debug warping string is #{warping_string}"
       button_is_interactive=GUI_view.button_check(robot,x=align_button[0],y=align_button[1]) #align button disappers when we warp.
-      puts "in while loop count is #{count} #{button_is_interactive}"
+      puts "in while loop count is #{count} button interactive #{button_is_interactive}"
       robot.delay(5000) #1/2 sec delay for log entry to appear
       count = count + 1
     end
