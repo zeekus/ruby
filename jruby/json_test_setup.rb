@@ -152,7 +152,7 @@ class Findtarget
        return(1)
       end #end if
       robot.mouseMove(x,y)
-      robot.delay(.5)
+      robot.delay(0.1)
     end #end of until loop
   end #end function move_to_target_pixel_like_human
 end #end class

@@ -146,19 +146,18 @@ class GUI_view
   def self.button_check(robot,x,y)
     #determine if a button changes colors when the mouse is moved out of the box.
      #this inidicates it is a clickable button
-    r,g,b=get_color_of_pixel(robot,x,y,debug=0) #with mouse on location
-    hue1=color_intensity(r,g,b)
+    r,g,b=Utility.get_color_of_pixel(robot,x,y,debug=0) #with mouse on location
+    hue1=Utility.color_intensity(r,g,b)
       
     y1=y #new y for mouse 
     until (y1==y-50) #50 pixel offset should work
       robot.mouseMove(x,y1) #move mouse off button in upward direction
       robot.delay(0.1)
-      get_current_mouse_location(robot)
       y1=y1-1
     end
 
-    r1,g1,b1=get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
-    hue2=color_intensity(r1,g1,b1)
+    r1,g1,b1=Utility.get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
+    hue2=Utility.color_intensity(r1,g1,b1)
     if hue1 >  hue2 or hue2 > hue1
       return true
     else
