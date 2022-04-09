@@ -61,9 +61,12 @@ class Utility
     hue2=color_intensity(r1,g1,b1)
     puts "hue2 is #{hue2}"
 
-    if hue1 >  hue2 or hue2 > hue1
+    mydiff= hue1 - hue2
+    puts "hue difference is #{mydiff}"
+    if (hue1 >  hue2 or hue2 > hue1) and mydiff > 50
         return "yes"
     else
+        puts "not a clickable button"
         return "no"
     end
   end

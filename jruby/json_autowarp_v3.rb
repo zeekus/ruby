@@ -151,9 +151,12 @@ class GUI_view
       y1=y1-1
     end
 
+    
+
     r1,g1,b1=Utility.get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
     hue2=Utility.color_intensity(r1,g1,b1)
-    if hue1 >  hue2 or hue2 > hue1
+    hue_diff=hue1-hue2
+    if (hue1 >  hue2 or hue2 > hue1) and hue_diff > 50 
       return true
     else
       return false
@@ -740,9 +743,11 @@ while in_space==1 #main run area begins here.
 
     #button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
     count=0 
-    button_is_interactive=""
-    warping_string=""
+    button_is_interactive=GUI_view.button_check(robot,x=align_button[0],y=align_button[1])
+    warping_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
+    puts "button_is_interactive #{button_is_interactive}"
     until button_is_interactive == false or warping_string =~ /warping/i 
+      puts "waiting for warping message or button is interactive false"
       GUI_Interact.hit_the_button(robot,target_location=warp_button,jump_count,message="w",debug=0)
       robot.delay(500)
       warping_string=Logparse.log_reader(debug,"warping",log_size=5,sec_threshold=5) #got a wait
@@ -858,7 +863,7 @@ while in_space==1 #main run area begins here.
           end
           session_change_wait=session_change_wait+1
           my_action.speak("#{session_change_wait}") if debug == 1
-          icon_is_visable = check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+          icon_is_visable = Gui_view.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
           robot.delay(300)
           if session_change_wait % 7 == 0 and icon_is_visable == "yes" # every 7 
             my_message=Gui_view.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
