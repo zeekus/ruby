@@ -113,7 +113,7 @@ robot = Robot.new
 mytarget=Findtarget.new
 
 targetloc=[]
-for x in 1..100
+for x in 1..10000
   #mytarget.speak("moving to location #{x}")
   location=mytarget.get_current_mouse_location(robot)
   print "===================== move #{x} ================================\n"
@@ -123,5 +123,5 @@ for x in 1..100
   location=mytarget.get_current_mouse_location(robot)
   print "\n" #extra return
   print "After move: my current mouse location is #{location}\n"
-  robot.delay(10)
+  robot.delay(1000)
 end
