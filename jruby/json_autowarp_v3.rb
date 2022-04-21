@@ -120,7 +120,8 @@ class Logparse
         if line =~ /#{target_phrase}/i  and result==1
            if target_phrase =~ /Jumping/i or target_phrase =~ /Undocking/i 
             capture_string = line.split("(None) ")[1]#remove first part of line so just get the jumping info
-           elsif target_phrase =~ /docking/i or target_phrase =~ /warping/i or target_phrase =~ /please wait.../i
+           #elsif target_phrase =~ /docking/i or target_phrase =~ /warping/i or target_phrase =~ /please wait.../i #original
+           elsif target_phrase =~ /docking/i or target_phrase =~ /while warping/i or target_phrase =~ /please wait/i or target_phrase =~ /cloaking.*fails/i
             capture_string = line.split("(notify) ")[1]#remove first part of line so just get the docking or warping line  
            elsif target_phrase =~ /combat/i
             capture_string = line.split("(combat) ")[1]
