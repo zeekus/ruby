@@ -76,7 +76,7 @@ class Logparse
   
     myfile=""
     potential_log_locations.each do |logfile_loc_glob|
-      puts "looking in #{logfile_loc_glob} for log file"
+      #puts "looking in #{logfile_loc_glob} for log file"
       limit=("-" + log_size.to_s).to_i #convert log size to negative number then back to integer
       last_log_entries=[] #empty array holding last log entries
       #initialize variables
@@ -479,7 +479,7 @@ class Utility
       printf "... key %2s tranlates to %2s seconds.\n" % [ key,values] 
       #print ", " if values != ship_align_secs.values.to_a.last #only add comma if not last element
     end
-  end
+   end
 
   def self.randomize_click_target(top,bottom)
     #description: we return back a random location between two positons based on range
@@ -647,6 +647,8 @@ warp_to_top=data_hash["warp_to_top"]
 warp_to_bottom=data_hash["warp_to_bottom"]
 jump_button_top=data_hash["jump_button_top"]
 jump_button_bottom=data_hash["jump_button_bottom"]
+orbit_button_bottom=data_hash["orbit_button_bottom"]
+orbit_button_top=data_hash["orbit_button_top"]
 white_i_icon_top=data_hash["white_i_icon_top"]
 white_i_icon_bottom=data_hash["white_i_icon_bottom"]
 blue_speed_top=data_hash["blue_speed_top"]
@@ -689,8 +691,7 @@ while in_space==1 #main run area begins here.
       #wait 1/2 second and retry
       robot.delay(500)
     end
-    
-  end
+  end #desination_selected
 
   #check for grey - ocassionally this is white
   are_we_stopped = Viewer.check_non_clickable(robot,"grey_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
@@ -709,7 +710,7 @@ while in_space==1 #main run area begins here.
   warp_button_pressed=0
   align_string="" 
   ###################
-  #SEQ: 1. hit warpto button or jump button - depending and verify
+  #STEP: 1. hit warpto button or jump button - depending on ship 
   ###################
   if in_space == 1 and destination_selected == 1 and icon_is_visable == "yes"
     Feedback.speak("go 1 warp") if debug ==1
@@ -730,16 +731,18 @@ while in_space==1 #main run area begins here.
         elsif cloak_type==1
           puts "standard cloaking routine called"
           Interact.cloak_ship(robot,cloaking_module,microwarp_module,debug)
+        else
+          puts "" #nothing
         end
-      end
-    end
+      end # jump count > 0 
+    end # cloak type cloak
 
     #########################
-    #pressing warpto button when needed
+    #Step 2: pressing warpto button when needed
     #########################
 
     my_orbit_button = Viewer.check_non_clickable(robot,"white_icon",orbit_button_top,orbit_button_bottom,rgb_color_map,debug)
-    button_is_interactive=Utility.button_check(robot,x=align_button[0],y=align_button[1],debug=0,ref_point) #align button disappers when we warp.
+    button_is_interactive=Viewer.button_check(robot,x=align_button[0],y=align_button[1]) #align button disappers when we warp.
 
     if my_orbit_button == "no" and button_is_interactive == true and warp_button_pressed==0
       count=0 
@@ -765,141 +768,146 @@ while in_space==1 #main run area begins here.
         Feedback.speak("in warp verified. bi #{button_is_interactive} string #{warping_sring}") if debug ==1
       end
     end
-  #################
-  #SEQ 2: ship should be speeding up: blue bar filling
-  #################
-  if warp_button_pressed==1
-    Feedback.speak("go 2 advance") if debug ==1
-    #######################################################
-    #Ship should be speeding up. Wait until the blue bar is full speed.
-    #######################################################
-    wait_count =0
-    until are_we_moving == "yes" 
-       print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
-       are_we_moving  = Viewer.check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-       wait_count=wait_count+1
-       Feedback.speak("waiting for alignment") if debug ==1
-       robot.delay(500)  #1/2 second delay                   
-       if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
-         Feedback.speak("warning acceleration overwait") 
-         puts "warning acceleration is taking too long. rescanning and clicking on yellow"
-         my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
-         warp_to_visable =Viewer.check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
-         icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-         if warp_to_visable =="yes" and icon_is_visable == "yes"
-          Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
-          Feedback.speak("pressing warp") if debug ==1
-         elsif warp_to_visable =="no" and icon_is_visable == "yes"
-          Interact.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
-          Feedback.speak("pressing jump") if debug ==1
-         else
-          Feedback.speak("waiting 1 sec") if debug ==1
-          robot.delay(1000)  #1 second delay 
-         end
-         wait_count=0 #reset wait count
-       else 
-         print "." #status bar like effect
-       end
-    end
-    min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
-    puts "" #new line
-    puts "align time was #{min} mins #{sec} seconds"
+    
 
-
-    ###################
-    #SEQ 3. waiting for jump completion/ session change 
-    ###################
-    Feedback.speak("waiting for session change") if debug ==1
-    in_hyper_jump=Time.now.to_i #get time in secs
-    wait_count=0
-    my_jump_click_again=0 # work around for stuck gates 
-    session_change_wait=0
-    jbutton_seq=0
-    jump_complete=0
-
-    while jump_complete==0 and warp_button_pressed==1 
-      robot.delay(1000)  #1 sec
-      wait_count=wait_count+1
-
-      #Fail SAFE check for icon and monitor speed
-      icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-      are_we_moving  = Viewer.check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
-      my_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
-      my_orbit_button = Viewer.check_non_clickable(robot,"white_icon",orbit_button_top,orbit_button_bottom,rgb_color_map,debug)
-
-      Feedback.speak("L3 icon #{icon_is_visable}") if debug ==1
-      Feedback.speak("L4 moving #{are_we_moving}") if debug ==1 
-      Feedback.speak("L5 jb #{my_button_visable}") if debug ==1 
-
-      #scan logs for a session change
-      return_string=Logparse.log_reader(debug,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
-
-      if return_string  =~ /jumping/
-        puts "3 - jumping - '#{return_string.to_s}'"
-        Feedback.speak("1 #{return_string}") #jumping 
-        jump_complete=1
-        jump_count=jump_count+1
-        jbutton_seq=jbutton_seq+1
-        robot.delay(rand(1500..2500)) #screen blinks. This is a work around.
-      else 
-        Feedback.speak("#{return_string} not found") if debug ==1 #jumping not found
-        return_string=Logparse.log_reader(debug,"docking",log_size=5,sec_threshold=5) #check for docking 
-
-        if (return_string =~ /docking/ )
-          Feedback.speak("1 docking finished")
-          min,sec=(Time.now.to_i-my_start).divmod(60)
-          puts "run time was #{min} mins #{sec} seconds"
-          exit
+    #################
+    #STEP  3: Warp Sequence: ship should be speeding up: blue bar filling
+    #################
+    if warp_button_pressed==1
+      Feedback.speak("go 2 advance") if debug ==1
+      #######################################################
+      #Ship should be speeding up. Wait until the blue bar is full speed.
+      #######################################################
+      wait_count =0
+      until are_we_moving == "yes" 
+        print "...waiting for ship to reach full speed. aligning: " if wait_count ==0 
+        are_we_moving  = Viewer.check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+        wait_count=wait_count+1
+        Feedback.speak("waiting for alignment") if debug ==1
+        robot.delay(500)  #1/2 second delay                   
+        if (wait_count/2) > ship_align_time #over ride for when things are happening too slow
+          Feedback.speak("warning acceleration overwait") 
+          puts "warning acceleration is taking too long. rescanning and clicking on yellow"
+          my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+          warp_to_visable =Viewer.check_non_clickable(robot,"white_icon",warp_to_top,warp_to_bottom,rgb_color_map,debug)
+          icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+          if warp_to_visable =="yes" and icon_is_visable == "yes"
+            Interact.hit_the_button(robot,target_location=warp_button,warp_count,message="w",debug)
+            Feedback.speak("pressing warp") if debug ==1
+          elsif warp_to_visable =="no" and icon_is_visable == "yes"
+            Interact.hit_the_button(robot,target_location=jump_button,warp_count,message="j",debug)
+            Feedback.speak("pressing jump") if debug ==1
+          else
+            Feedback.speak("waiting 1 sec") if debug ==1
+            robot.delay(1000)  #1 second delay 
+          end
+          wait_count=0 #reset wait count
         else 
-          Feedback.speak("Checks failed.") if debug ==1 
-          min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
-          #work around cloaker ship not registering jump
-          #ocassionally we mess up a jump gates lock us out. This should catch it.    
+          print "." #status bar like effect
+        end
+      end
+      min,sec=(Time.now.to_i-align_time_start).divmod(60) #align time to min secs
+      puts "" #new line
+      puts "align time was #{min} mins #{sec} seconds"
 
-          if my_orbit_button =="yes" and icon_is_visable =="yes" and are_we_moving == "no"
-            Interact.single_click(robot,target_location=jump_button,debug,randomize=1) #force single click
-          end 
-        end #return string is not docking 
-       end # return string is not jumping
+
+      ###################
+      #Step 4 waiting for jump completion/ session change 
+      ###################
+      Feedback.speak("waiting for session change") if debug ==1
+      in_hyper_jump=Time.now.to_i #get time in secs
+      wait_count=0
+      my_jump_click_again=0 # work around for stuck gates 
+      session_change_wait=0
+      jbutton_seq=0
+      jump_complete=0
+
+      while jump_complete==0 and warp_button_pressed==1 
+        robot.delay(1000)  #1 sec
+        wait_count=wait_count+1
+
+        #Fail SAFE check for icon and monitor speed
+        icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+        are_we_moving  = Viewer.check_non_clickable(robot,"blue_speed",blue_speed_top,blue_speed_bottom,rgb_color_map,debug)
+        my_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
+        my_orbit_button = Viewer.check_non_clickable(robot,"white_icon",orbit_button_top,orbit_button_bottom,rgb_color_map,debug)
+
+        Feedback.speak("L3 icon #{icon_is_visable}") if debug ==1
+        Feedback.speak("L4 moving #{are_we_moving}") if debug ==1 
+        Feedback.speak("L5 jb #{my_button_visable}") if debug ==1 
+
+        #scan logs for a session change
+        return_string=Logparse.log_reader(debug,"Jumping",log_size=5,sec_threshold=5) #jumping is slow 10 secs
+
+        if return_string  =~ /jumping/
+        puts "3 - jumping - '#{return_string.to_s}'"
+          Feedback.speak("1 #{return_string}") #jumping 
+          jump_complete=1
+          jump_count=jump_count+1
+          jbutton_seq=jbutton_seq+1
+          robot.delay(rand(1500..2500)) #screen blinks. This is a work around.
+        else 
+          Feedback.speak("#{return_string} not found") if debug ==1 #jumping not found
+          return_string=Logparse.log_reader(debug,"docking",log_size=5,sec_threshold=5) #check for docking 
+
+          if (return_string =~ /docking/ )
+            Feedback.speak("docking finished")
+            min,sec=(Time.now.to_i-my_start).divmod(60)
+            puts "run time was #{min} mins #{sec} seconds"
+            exit
+          else 
+            Feedback.speak("Checks failed.") if debug ==1 
+            min,secs=(Time.now.to_i-in_hyper_jump).divmod(60)
+            #work around cloaker ship not registering jump
+            #ocassionally we mess up a jump gates lock us out. This should catch it.    
+
+            if my_orbit_button =="yes" and icon_is_visable =="yes" and are_we_moving == "no"
+              Interact.single_click(robot,target_location=jump_button,debug,randomize=1) #force single click
+            end 
+          end #return string is not docking 
+        end # return string is not jumping
       end # while jump_complete==0 and warp button pressed. 
 
-    #reseting jumped variables 
-    warp_button_pressed=0 
-    mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
-    puts "in warp time was #{mins} minutes #{secs} seconds"
+      #reseting jumped variables 
+      warp_button_pressed=0 
+      mins,secs=(Time.now.to_i-in_hyper_jump).divmod(60) #get time in warp 
+      puts "in warp time was #{mins} minutes #{secs} seconds"
 
-    ########################################################
-    #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
-    ########################################################
-    wait_for_session_change=Time.now.to_i
-    wait_count=0 
-    jump_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
-    icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-    Interact.single_click(robot,ref_point,debug,randomize=1) #move mouse to see the buttons 
-    until icon_is_visable=="yes" and jump_button_visable=="yes"
-     Feedback.speak("session refresh click") if debug == 1 
-     print "refresh pause:" if wait_count==0
-     print "."
-     robot.delay(500)  #1/2 second delay 
-     if icon_is_visable == "no"
-      Feedback.speak("scanning for the yellow icon")
-      my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
-     end 
-     wait_count=wait_count+1
-     icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
-     jump_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
-     min,secs=(Time.now.to_i-wait_for_session_change).divmod(60)
-     if secs % 3 == 0  and wait_count > 10 #work around - ocassionally we can lose track of the gate after completing a jump. re-scan for it if lost after 7 seconds.
-       puts "" #new line
-       puts" lost white icon or jump_button: we should click on the yellow icon again."
-       #check and click on the destination indicator
-       Feedback.speak("go 4B lost track of the gate. jump_button visible #{jump_button_visable} icon visible #{icon_is_visable}") 
-       my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
-       wait_count=0 #reset wait count
-     end
+      ########################################################
+      #SEQ 4: Verifying end of jump sequence. Overview should display the 'i' icon on the far right of the screen. 
+      ########################################################
+      wait_for_session_change=Time.now.to_i
+      wait_count=0 
+      jump_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
+      icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+      Interact.single_click(robot,ref_point,debug,randomize=1) #move mouse to see the buttons 
+
+      until icon_is_visable=="yes" and jump_button_visable=="yes"
+       Feedback.speak("session refresh click") if debug == 1 
+       print "refresh pause:" if wait_count==0
+       print "."
+       robot.delay(500)  #1/2 second delay 
+       if icon_is_visable == "no"
+        Feedback.speak("scanning for the yellow icon")
+        my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+       end 
+       wait_count=wait_count+1
+       icon_is_visable = Viewer.check_non_clickable(robot,"white_icon",white_i_icon_top,white_i_icon_bottom,rgb_color_map,debug)
+       jump_button_visable = Viewer.check_non_clickable(robot,"white_icon",jump_button_top,jump_button_bottom,rgb_color_map,debug)
+       min,secs=(Time.now.to_i-wait_for_session_change).divmod(60)
+       if secs % 3 == 0  and wait_count > 10 #work around - ocassionally we can lose track of the gate after completing a jump. re-scan for it if lost after 7 seconds.
+         puts "" #new line
+         puts" lost white icon or jump_button: we should click on the yellow icon again."
+         #check and click on the destination indicator
+         Feedback.speak("go 4B lost track of the gate. jump_button visible #{jump_button_visable} icon visible #{icon_is_visable}") 
+         my_message=Viewer.check_clickable(robot,my_start,"jtarget_yellow",clicks=1,yellow_icon_left_top,yellow_icon_right_bottom,rgb_color_map,debug,randomize=0)
+         wait_count=0 #reset wait count
+       end
+      end #until icon_is_visible
     end
-    puts "" #new line
+      #puts "" #new line
+      robot.delay(1000)
   end
-  robot.delay(1000) #added 1 second delay for session refresh
-end  
-#test
+end
+
+ 
