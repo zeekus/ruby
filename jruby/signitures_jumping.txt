@@ -1,0 +1,10 @@
+signiture_map={
+   "Aligning"        => "(notify) Please wait...",
+   "Inwarp"          => "(notify) You cannot do that while warping.",
+   "Jumping"         => "(None) Jumping from",
+   "Cloakfail1"      => "(notify) Improved Cloaking Device II fails to activate",
+   "request_docking" => "(notify) Setting course to docking perimeter", 
+   "docking"         => "(notify) Your docking request has been accepted. Your ship will be towed into station.",
+   "near_jump_gate"  => "(notify) You are unable to align or warp to the selected object because your warp drive is unable to lock onto it."
+}
+
