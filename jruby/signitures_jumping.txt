@@ -1,3 +1,5 @@
+
+#log file signiture map
 signiture_map={
    "Aligning"        => "(notify) Please wait...",
    "Inwarp"          => "(notify) You cannot do that while warping.",
