@@ -9,8 +9,7 @@ require 'time'
 java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.event.InputEvent' #moves mouse and typing
 java_import 'java.awt.MouseInfo'        #get location of mouse
-
-# java_import 'java.awt.Color'            #get color of pixel at location on screen
+java_import 'java.awt.Color'            #get color of pixel at location on screen
 # java_import 'java.awt.event.KeyEvent'   #presing keys
 # java_import 'java.awt.Toolkit'          #gets screens size
 
@@ -199,9 +198,9 @@ class Viewer
     warp_to_is_interactive=Utility.button_check(robot,x=data_hash["warp_to_top"][0],y=data_hash["warp_to_top"][1],debug=0,ref_point) #jump button disappers when we warp or approach gate.
     orbit_button_visible=  Utility.button_check(robot,x=data_hash["orbit_button_top"][0],y=data_hash["orbit_button_top"][1],debug=0,ref_point) #orbit button disappers when warping or session complete.
 
-    Feedback.speak("L1 grey stopped #{are_we_stopped}") if debug==1
-    Feedback.speak("L2 blue moving #{are_we_moving}") if debug==1
-    Feedback.speak("L3 icon #{i_icon_visible}") if debug ==1
+    # Feedback.speak("L1 grey stopped #{are_we_stopped}") if debug==1
+    # Feedback.speak("L2 blue moving #{are_we_moving}") if debug==1
+    # Feedback.speak("L3 icon #{i_icon_visible}") if debug ==1
 
     return i_icon_visible,orbit_button_visible,are_we_stopped,are_we_moving,align_is_interactive,warp_to_is_interactive
   end 
@@ -348,6 +347,33 @@ end #end class Interact
 
 
 class Utility
+
+  def self.button_check(robot,x,y,debug,ref_point)
+
+    Interact.move_mouse_to_target_like_human(robot,[x,y],debug=0) #move mouse on button
+    robot.delay(500)
+    
+    r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
+    puts r,g,b
+    hue1=color_intensity(r,g,b)
+    puts "hue1 is #{hue1}"
+    
+    Interact.move_mouse_to_target_like_human(robot,[x,y-50],debug=0) #move mosue off button
+    r1,g1,b1=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
+
+    puts r1,g1,b1
+    hue2=color_intensity(r1,g1,b1)
+    puts "hue2 is #{hue2}"
+
+    mydiff= hue1 - hue2
+    puts "hue difference is #{mydiff}"
+    if (hue1 >  hue2 or hue2 > hue1) and mydiff > 50
+        return "yes"
+    else
+        #puts "not a clickable button"
+        return "no"
+    end
+  end
 
   def self.color_pixel_scan_in_range(robot,target_color,left_top_xy,right_bottom_xy,rgb_color_map,debug) 
     count=0
@@ -504,11 +530,71 @@ else
   exit
 end
 
+
+############
+##MAIN
+############
+###################################################
+#Future - todo - the color map should be put in a json file
+###################################################
+#maps for the RGB colors in HEX 
+rgb_color_map={
+  "5C0545" => "gold_undock",
+  "590342" => "gold_undock",
+  "5C0546" => "gold_undock",
+  "508FC5" => "blue_speed",
+  "4F8CC1" => "blue_speed",
+  "5792C4" => "blue_speed",
+  "5290C4" => "blue_speed",
+  "558DBF" => "blue_speed",
+  "508FC4" => "blue_speed",
+  "5690C1" => "blue_speed",
+  "5490C2" => "blue_speed",
+  "5590C3" => "blue_speed",
+  "528FC4" => "blue_speed",
+  "508CC2" => "blue_speed",
+  "4FC38D" => "blue_speed",
+  "4DC18B" => "blue_speed",
+  "A6A19B" => "grey_speed",
+  "A39E98" => "grey_speed",
+  "A7A29B" => "grey_speed",
+  "A4A099" => "grey_speed",
+  "A4A09A" => "grey_speed",
+  "9E9C97" => "grey_speed",
+  "A5A09A" => "grey_speed",
+  "9C9791" => "grey_speed",
+  "A4999E" => "grey_speed",
+  "A3979D" => "grey_speed",
+  "A29A9F" => "grey_speed",
+  "A69CA3" => "grey_speed",
+  "A69CA2" => "grey_speed",
+  "605617" => "jtarget_yellow",
+  "635A14" => "jtarget_yellow",
+  "483D1C" => "jtarget_yellow",
+  "796B25" => "jtarget_yellow",
+  "A8A013" => "jtarget_yellow",
+  "A29B11" => "jtarget_yellow",
+  "514420" => "jtarget_yellow",
+  "FFFFFF" => "white_icon"}
+
+  ship_align_secs={
+        "s"  =>  2,  #shuttle 
+        "f"  =>  5,  #frig
+        "t"  =>  7,  #transport
+        "cr" =>  15, #cruiser 
+        "h"  =>  20, #hauler
+        "bs" =>  20, #battleship
+        "fr" =>  65  #freighter
+}
+
 robot = Robot.new
 
-in_space==1
+in_space=1
+debug=1
+ref_point=data_hash["screen_center"]
 
 while in_space==1 do 
+  sleep 5
   #randomize places we click for each iteration
   align_button=Utility.randomize_click_target(data_hash["align_to_top"],data_hash["align_to_bottom"])
   warp_button=Utility.randomize_click_target(data_hash["warp_to_top"],data_hash["warp_to_bottom"])
@@ -516,8 +602,15 @@ while in_space==1 do
   orbit_button=Utility.randomize_click_target(data_hash["orbit_button_top"],data_hash["orbit_button_bottom"])
 
   #run button visual checks 
-  i_icon_visible,orbit_button_visible,are_we_stopped,are_we_moving,align_is_interactive,warp_to_is_interactive=Viewer.(robot,rgb_color_map,data_hash,debug)
+  i_icon_visible,orbit_button_visible,are_we_stopped,are_we_moving,align_is_interactive,warp_to_is_interactive=Viewer.recurring_visual_checks(robot,ref_point,rgb_color_map,data_hash,debug)
   
+  Feedback.speak("align button visible: #{align_is_interactive}")
+  Feedback.speak("warp button visible: #{warp_to_is_interactive}")
+  Feedback.speak("icon is visible #{i_icon_visible}")
+  Feedback.speak("moving: #{are_we_moving}")
+  Feedback.speak("orbit_button #{orbit_button_visible}")
+
+
   if i_icon_visible == "yes" and orbit_button_visible == "yes"
     Feedback.speak("we are at the gate or ready dock.")
   end
