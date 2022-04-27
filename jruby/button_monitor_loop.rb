@@ -1,5 +1,5 @@
-#filename: detect_a_button.rb
-#description: detects buttons on a screen. 
+#filename: button_monitory_loop.rb
+#description: monitors state of buttons . 
 #  Most buttons are dynamic and change color when a mouse is moved  
 
 
