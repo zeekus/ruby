@@ -135,28 +135,6 @@ end #class
 
 class Viewer
 
-  def self.button_check(robot,x,y)
-    #determine if a button changes colors when the mouse is moved out of the box.
-     #this inidicates it is a clickable button
-    r,g,b=Utility.get_color_of_pixel(robot,x,y,debug=0) #with mouse on location
-    hue1=Utility.color_intensity(r,g,b)
-      
-    y1=y #new y for mouse 
-    until (y1==y-50) #50 pixel offset should work
-      robot.mouseMove(x,y1) #move mouse off button in upward direction
-      robot.delay(0.1)
-      y1=y1-1
-    end
- 
-    r1,g1,b1=Utility.get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
-    hue2=Utility.color_intensity(r1,g1,b1)
-    hue_diff=hue1-hue2
-    if (hue1 >  hue2 or hue2 > hue1) and hue_diff > 50 
-      return true
-    else
-      return false
-    end
-  end
 
   def self.check_selected_item_menu()
     #possible future feature
@@ -173,7 +151,6 @@ class Viewer
     #do we see the session timer. Indicates session change completed. 
     #reliability: low-medium - can fail 20% of the time. 
   end    
-
 
   def self.check_non_clickable(robot,search_element,left_top_xy,right_bottom_xy,rgb_color_map,debug)
     #description: scan region of screen without moving the mouse
@@ -662,10 +639,11 @@ align_string=""
 ref_point=data_hash["screen_center"]
 
 while in_space==1 do 
-  #randomize places we click each iteration
+  #randomize places we click for each iteration
   align_button=Utility.randomize_click_target(data_hash["align_to_top"],data_hash["align_to_bottom"])
   warp_button=Utility.randomize_click_target(data_hash["warp_to_top"],data_hash["warp_to_bottom"])
   jump_button=Utility.randomize_click_target(data_hash["jump_button_top"],data_hash["jump_button_bottom"])
+  orbit_button=Utility.randomize_click_target(data_hash["orbit_button_top"],data_hash["orbit_button_bottom"])
 
   #run button visual checks 
   i_icon_visible,orbit_button_visible,are_we_stopped,are_we_moving,align_is_interactive,warp_to_is_interactive=Viewer.(robot,rgb_color_map,data_hash,debug)
