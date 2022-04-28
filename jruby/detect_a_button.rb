@@ -24,8 +24,9 @@ class Utility
       r = mycolors.red
       g = mycolors.green
       b = mycolors.blue
-      print "get_color_of_pixel: at [#{x},#{y}] color is r=#{r},g=#{g},b=#{b}\n" if debug==1
-      return r,g,b
+      a=  mycolors.alpha
+      print "get_color_of_pixel: at [#{x},#{y}] color is r=#{r},g=#{g},b=#{b},a=#{a}\n" if debug==1
+      return r,g,b,a
     end
 
     def self.get_current_mouse_location(robot)
@@ -41,13 +42,14 @@ class Utility
     end
 
   def self.button_check(robot,x,y)
-    #get_current_mouse_location(robot)
     
-    r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
-    puts r,g,b
+    
+    #start location
+    r,g,b,a=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
     hue1=color_intensity(r,g,b)
-    puts "hue1 is #{hue1}"
+    puts "hue with mouse on is #{hue1}"
     
+    #move mouse up
     y1=y
     until (y1==y-50) #50 pixel offset should work
       robot.mouseMove(x,y1) #move mouse off button in upward direction
@@ -56,17 +58,25 @@ class Utility
       y1=y1-1
     end
 
-    r1,g1,b1=get_color_of_pixel(robot,x,y1,debug=1) #with mouse off location
-    puts r1,g1,b1
+    #revist start location
+    r1,g1,b1,a1=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
     hue2=color_intensity(r1,g1,b1)
-    puts "hue2 is #{hue2}"
+    puts "hue with mouse off is #{hue2}"
 
-    mydiff= hue1 - hue2
-    puts "hue difference is #{mydiff}"
-    if (hue1 >  hue2 or hue2 > hue1) and mydiff > 50
+    
+    
+    if (hue1 >  hue2 )
+        mydiff= hue1 - hue2
+        puts "hue difference is #{mydiff}"
+        puts "button is darker with mouse moved off"
         return "yes"
+    elsif ( hue2 > hue1)
+        mydiff= hue2 - hue1
+        puts "hue difference is #{mydiff}"
+        puts "button is lighter with mouse moved off"
+        return "yes" 
     else
-        puts "not a clickable button"
+        puts "hue is the same. not a clickable"
         return "no"
     end
   end

@@ -353,25 +353,29 @@ class Utility
     Interact.move_mouse_to_target_like_human(robot,[x,y],debug=0) #move mouse on button
     robot.delay(500)
     
-    r,g,b=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
-    puts r,g,b
+    #start location
+    r,g,b,a=get_color_of_pixel(robot,x,y,debug=1) #with mouse on location
     hue1=color_intensity(r,g,b)
-    puts "hue1 is #{hue1}"
+    puts "hue with mouse on is #{hue1}"
     
-    Interact.move_mouse_to_target_like_human(robot,[x,y-50],debug=0) #move mosue off button
-    r1,g1,b1=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
+    Interact.move_mouse_to_target_like_human(robot,[x,y-100],debug=0) #move mouse off button
+    r,g,b,a=get_color_of_pixel(robot,x,y,debug=1) #with mouse off location
+    hue2=color_intensity(r,g,b)
+    puts "hue with mouse off is #{hue2}"
 
-    puts r1,g1,b1
-    hue2=color_intensity(r1,g1,b1)
-    puts "hue2 is #{hue2}"
-
-    mydiff= hue1 - hue2
-    puts "hue difference is #{mydiff}"
-    if (hue1 >  hue2 or hue2 > hue1) and mydiff > 50
-        return "yes"
+    if (hue1 >  hue2 )
+      mydiff= hue1 - hue2
+      puts "hue difference is #{mydiff}"
+      puts "button is darker with mouse moved off"
+      return "yes"
+    elsif ( hue2 > hue1)
+      mydiff= hue2 - hue1
+      puts "hue difference is #{mydiff}"
+      puts "button is lighter with mouse moved off"
+      return "yes" 
     else
-        #puts "not a clickable button"
-        return "no"
+      puts "hue is the same. not a clickable"
+      return "no"
     end
   end
 
