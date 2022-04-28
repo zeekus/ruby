@@ -196,7 +196,7 @@ class Viewer
     #checks for interactive buttons
     align_is_interactive=Viewer.check_non_clickable(robot,"white_icon",data_hash["align_to_top"],data_hash["align_to_bottom"],rgb_color_map,debug)  #align button disappers when we warp.
     warp_to_is_interactive=Viewer.check_non_clickable(robot,"white_icon",data_hash["warp_to_top"],data_hash["warp_to_bottom"],rgb_color_map,debug)  #warp to button disappers when we warp.
-    orbit_buttion_visible=Viewer.check_non_clickable(robot,"white_icon",data_hash["orbit_button_top"],data_hash["orbit_button_bottom"],rgb_color_map,debug)  #orbit button disappers when we warp.
+    orbit_button_visible=Viewer.check_non_clickable(robot,"white_icon",data_hash["orbit_button_top"],data_hash["orbit_button_bottom"],rgb_color_map,debug)  #orbit button disappers when we warp.
     
     # Feedback.speak("L1 grey stopped #{are_we_stopped}") if debug==1
     # Feedback.speak("L2 blue moving #{are_we_moving}") if debug==1
