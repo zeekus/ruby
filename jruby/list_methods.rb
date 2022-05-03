@@ -1,4 +1,8 @@
 require 'java'
-#java_import 'java.awt.Color'
-#print p java.awt.Color.methods
-print p java.awt.Robot.methods('false')
+java_import 'java.awt.Robot'  #robot class
+list_of_methods=Robot.instance_methods('false')
+
+
+for methods in list_of_methods
+     print p methods
+end
