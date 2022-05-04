@@ -22,7 +22,7 @@ def find_color_match(robot,x,y,target_color,rgb_hex_map)
   r = mycolors.red
   g = mycolors.green
   b = mycolors.blue
-  
+   
   hex_string=(r.to_s(16) + g.to_s(16) + b.to_s(16)).upcase #RGB color to HEX format
   print "test: find_color_match: at [#{x},#{y}] color is #{hex_string} while target color is #{target_color}\n"    
   if rgb_hex_map["1E1E1E"] == target_color and rgb_hex_map != nil
@@ -45,8 +45,9 @@ def get_color_of_pixel(robot,x,y)
   g = mycolors.green
   b = mycolors.blue
   a = mycolors.alpha #defaults to 255 in robot 
+  t = mycolors.transparency
   
-  print "get_color_of_pixel: at [#{x},#{y}] color is r=#{r},g=#{g},b=#{b},a=#{a}\n"
+  print "get_color_of_pixel: at [#{x},#{y}] color is r=#{r},g=#{g},b=#{b},a=#{a},t=#{t}\n"
   return r,b,g
 end
 
