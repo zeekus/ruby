@@ -1,15 +1,14 @@
 #filename: detect_a_button.rb
 #description: detects buttons on a screen. 
 #  Most buttons are dynamic and change color when a mouse is moved  
+#  This works on most standard buttons. Howerver, games use a transparency layer. 
+#  It appears java.awt.Robot can not see the transparent layers as of 5/22. 
 
 
 require 'java'
 java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.event.InputEvent' #moves mouse and typing
 java_import 'java.awt.MouseInfo'        #get location of mouse
-# java_import 'java.awt.Color'            #get color of pixel at location on screen
-# java_import 'java.awt.event.KeyEvent'   #presing keys
-# java_import 'java.awt.Toolkit'          #gets screens size
 
 class Utility 
     def self.get_time_and_loc(robot)

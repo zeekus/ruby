@@ -1,6 +1,7 @@
 #!/usr/bin/jruby
 #filename: move_mouse.rb
-#description: gets the current mouse location
+#description: gets the current mouse location. This gets the X,Y from MouseInfo.getpointer
+#summary gets one X,Y point
 
 require 'java'
 

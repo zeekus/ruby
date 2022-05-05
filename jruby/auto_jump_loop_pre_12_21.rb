@@ -1,6 +1,7 @@
 #!/usr/bin/jruby
 #filename: automatic_moving.rb
 #description: moves ship from system to system.
+#note this is an old version 
 
 require 'java'
 

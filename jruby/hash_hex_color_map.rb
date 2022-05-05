@@ -1,3 +1,6 @@
+#filename: hash_hex_color_map.rb
+#description: a hash color map. Hex colors mapped to a more simplied subjective view.
+
 rgb_color_map={ 
     "5C467"  => "gold_undock",
     "5F489"  => "gold_undock",

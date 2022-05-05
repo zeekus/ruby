@@ -1,7 +1,6 @@
 #filename: button_monitory_loop.rb
-#description: monitors state of buttons . 
-#  Most buttons are dynamic and change color when a mouse is moved  
-
+#description: monitors state of buttons on a gui interface. 
+#  Most buttons are dynamic and change color when a mouse is moved. This tells us when there is a change.
 
 require 'java'
 require 'json'
@@ -10,8 +9,7 @@ java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.event.InputEvent' #moves mouse and typing
 java_import 'java.awt.MouseInfo'        #get location of mouse
 java_import 'java.awt.Color'            #get color of pixel at location on screen
-# java_import 'java.awt.event.KeyEvent'   #presing keys
-# java_import 'java.awt.Toolkit'          #gets screens size
+
 
 start_time=Time.now.to_i #get time in secs
 

@@ -1,3 +1,6 @@
+#description: get active screen size.
+#filename: getscreen_size.rb
+
 require 'java'
 java_import 'java.awt.Robot'            #robot class
 java_import 'java.awt.Toolkit'
@@ -17,6 +20,3 @@ robot.mouseMove(cw,ch) #reset state of mouse
 
 
 
-#framemain.setSize((int)width,(int)height);
-#framemain.setResizable(true);
-#framemain.setExtendedState(JFrame.MAXIMIZED_BOTH);

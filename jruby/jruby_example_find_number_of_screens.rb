@@ -1,4 +1,5 @@
-
+#description: find number of screens on the machine in use.
+#filename: find_number_of_screens.rb
 
 require 'java'
 java_import 'java.awt.Robot'            #robot class
