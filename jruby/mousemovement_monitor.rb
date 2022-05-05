@@ -1,4 +1,5 @@
-
+#filename: mousemovement_monitor.rb
+#description: monitors mouse movement. Upon movemement the new mouse location is displayed.
 
 require 'java'
 java_import 'java.awt.Robot'            #robot class
