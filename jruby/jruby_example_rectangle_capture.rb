@@ -1,4 +1,4 @@
-#filename: example_ruby_rectangle_capture.rb
+#filename: jruby_example_rectangle_capture.rb
 #description: get a location on the screen and store as an image.
 
 require 'java'

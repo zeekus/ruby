@@ -1,4 +1,4 @@
-#filename: example_jruby_find_colors_at_mouse_coords.rb
+#filename: jruby_example_find_colors_at_mouse_coords.rb
 #description: finds the colors of a pixel under the mouse.
 
 require 'java'
