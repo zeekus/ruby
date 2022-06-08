@@ -1,5 +1,8 @@
 
 #log file signiture map
+
+
+
 signiture_map={
    "Aligning"        => "(notify) Please wait...",
    "Inwarp"          => "(notify) You cannot do that while warping.",
@@ -9,4 +12,16 @@ signiture_map={
    "docking"         => "(notify) Your docking request has been accepted. Your ship will be towed into station.",
    "near_jump_gate"  => "(notify) You are unable to align or warp to the selected object because your warp drive is unable to lock onto it."
 }
+
+#if /please/i.match("(notify) Please wait...")
+#   puts "match"
+#end
+
+#if /please/i.match("#{signiture_map["Aligning"]}")
+#  puts "match 2"
+#end
+
+#if signiture_map["Aligning"].match('[Pp]lease')
+#  puts "match 3"
+#end
 
