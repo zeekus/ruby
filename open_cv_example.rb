@@ -1,7 +1,7 @@
 #!/usb/bin/ruby
 #filename: open_cv_example.rb
 #description: find a pointer on a screen wth open ai.
-#requirements: pointer.png image 
+#requirements: pointer.png image gem install opencv
 
 #capture the screen 
 capture = CvCapture.open
